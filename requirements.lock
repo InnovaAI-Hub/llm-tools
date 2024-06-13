@@ -9,37 +9,307 @@
 #   generate-hashes: false
 
 -e file:.
+accelerate==0.31.0
+    # via llm-inference
+aiohttp==3.9.5
+    # via vllm
+aiosignal==1.3.1
+    # via aiohttp
+    # via ray
 annotated-types==0.7.0
     # via pydantic
+anyio==4.4.0
+    # via httpx
+    # via openai
+    # via starlette
+    # via watchfiles
+async-timeout==4.0.3
+    # via aiohttp
+attrs==23.2.0
+    # via aiohttp
+    # via jsonschema
+    # via referencing
+certifi==2024.6.2
+    # via httpcore
+    # via httpx
+    # via requests
 cfgv==3.4.0
     # via pre-commit
+charset-normalizer==3.3.2
+    # via requests
+click==8.1.7
+    # via ray
+    # via typer
+    # via uvicorn
+cloudpickle==3.0.0
+    # via outlines
+cmake==3.29.5
+    # via vllm
+diskcache==5.6.3
+    # via outlines
 distlib==0.3.8
     # via virtualenv
+distro==1.9.0
+    # via openai
+dnspython==2.6.1
+    # via email-validator
+email-validator==2.1.1
+    # via fastapi
+exceptiongroup==1.2.1
+    # via anyio
+fastapi==0.111.0
+    # via vllm
+fastapi-cli==0.0.4
+    # via fastapi
 filelock==3.14.0
+    # via huggingface-hub
+    # via ray
+    # via torch
+    # via transformers
     # via virtualenv
+    # via vllm
+frozenlist==1.4.1
+    # via aiohttp
+    # via aiosignal
+    # via ray
+fsspec==2024.6.0
+    # via huggingface-hub
+    # via torch
+h11==0.14.0
+    # via httpcore
+    # via uvicorn
+httpcore==1.0.5
+    # via httpx
+httptools==0.6.1
+    # via uvicorn
+httpx==0.27.0
+    # via fastapi
+    # via openai
+huggingface-hub==0.23.3
+    # via accelerate
+    # via tokenizers
+    # via transformers
 identify==2.5.36
     # via pre-commit
+idna==3.7
+    # via anyio
+    # via email-validator
+    # via httpx
+    # via requests
+    # via yarl
+interegular==0.3.3
+    # via lm-format-enforcer
+    # via outlines
+jinja2==3.1.4
+    # via fastapi
+    # via outlines
+    # via torch
+joblib==1.4.2
+    # via outlines
+jsonschema==4.22.0
+    # via outlines
+    # via ray
+jsonschema-specifications==2023.12.1
+    # via jsonschema
+lark==1.1.9
+    # via outlines
+llvmlite==0.42.0
+    # via numba
+lm-format-enforcer==0.10.1
+    # via vllm
+markdown-it-py==3.0.0
+    # via rich
+markupsafe==2.1.5
+    # via jinja2
+mdurl==0.1.2
+    # via markdown-it-py
+mpmath==1.3.0
+    # via sympy
+msgpack==1.0.8
+    # via ray
+multidict==6.0.5
+    # via aiohttp
+    # via yarl
+nest-asyncio==1.6.0
+    # via outlines
+networkx==3.3
+    # via torch
+ninja==1.11.1.1
+    # via vllm
 nodeenv==1.9.1
     # via pre-commit
+numba==0.59.1
+    # via outlines
+numpy==1.26.4
+    # via accelerate
+    # via numba
+    # via outlines
+    # via pandas
+    # via scipy
+    # via transformers
+    # via vllm
+    # via xformers
+nvidia-ml-py==12.555.43
+    # via vllm
+openai==1.33.0
+    # via vllm
+orjson==3.10.4
+    # via fastapi
+outlines==0.0.34
+    # via vllm
+packaging==24.1
+    # via accelerate
+    # via huggingface-hub
+    # via lm-format-enforcer
+    # via ray
+    # via transformers
+pandas==2.2.2
+    # via llm-inference
 platformdirs==4.2.2
     # via virtualenv
 pre-commit==3.7.1
     # via llm-inference
+prometheus-client==0.20.0
+    # via prometheus-fastapi-instrumentator
+    # via vllm
+prometheus-fastapi-instrumentator==7.0.0
+    # via vllm
+protobuf==5.27.1
+    # via ray
+psutil==5.9.8
+    # via accelerate
+    # via vllm
+py-cpuinfo==9.0.0
+    # via vllm
 pydantic==2.7.3
+    # via fastapi
     # via llm-inference
+    # via lm-format-enforcer
+    # via openai
+    # via outlines
     # via pydantic-settings
+    # via vllm
 pydantic-core==2.18.4
     # via pydantic
 pydantic-settings==2.3.1
     # via llm-inference
+pygments==2.18.0
+    # via rich
+python-dateutil==2.9.0.post0
+    # via pandas
 python-dotenv==1.0.1
     # via pydantic-settings
+    # via uvicorn
+python-multipart==0.0.9
+    # via fastapi
+pytz==2024.1
+    # via pandas
 pyyaml==6.0.1
+    # via accelerate
+    # via huggingface-hub
+    # via lm-format-enforcer
     # via pre-commit
+    # via ray
+    # via transformers
+    # via uvicorn
+ray==2.24.0
+    # via vllm
+referencing==0.35.1
+    # via jsonschema
+    # via jsonschema-specifications
+    # via outlines
+regex==2024.5.15
+    # via tiktoken
+    # via transformers
+requests==2.32.3
+    # via huggingface-hub
+    # via outlines
+    # via ray
+    # via tiktoken
+    # via transformers
+    # via vllm
+rich==13.7.1
+    # via typer
+rpds-py==0.18.1
+    # via jsonschema
+    # via referencing
 ruff==0.4.8
     # via llm-inference
-typing-extensions==4.12.1
+safetensors==0.4.3
+    # via accelerate
+    # via transformers
+scipy==1.13.1
+    # via outlines
+sentencepiece==0.2.0
+    # via vllm
+shellingham==1.5.4
+    # via typer
+six==1.16.0
+    # via python-dateutil
+sniffio==1.3.1
+    # via anyio
+    # via httpx
+    # via openai
+starlette==0.37.2
+    # via fastapi
+    # via prometheus-fastapi-instrumentator
+sympy==1.12.1
+    # via torch
+tiktoken==0.7.0
+    # via vllm
+tokenizers==0.19.1
+    # via transformers
+    # via vllm
+torch==2.3.0+cpu
+    # via accelerate
+    # via llm-inference
+    # via outlines
+    # via vllm
+    # via vllm-flash-attn
+    # via xformers
+tqdm==4.66.4
+    # via huggingface-hub
+    # via openai
+    # via transformers
+transformers==4.41.2
+    # via llm-inference
+    # via outlines
+    # via vllm
+typer==0.12.3
+    # via fastapi-cli
+typing-extensions==4.12.2
+    # via anyio
+    # via fastapi
+    # via huggingface-hub
+    # via openai
     # via pydantic
     # via pydantic-core
+    # via torch
+    # via typer
+    # via uvicorn
+    # via vllm
+tzdata==2024.1
+    # via pandas
+ujson==5.10.0
+    # via fastapi
+urllib3==2.2.1
+    # via requests
+uvicorn==0.30.1
+    # via fastapi
+    # via vllm
+uvloop==0.19.0
+    # via uvicorn
 virtualenv==20.26.2
     # via pre-commit
+vllm==0.4.3
+    # via llm-inference
+vllm-flash-attn==2.5.8.post2
+    # via vllm
+watchfiles==0.22.0
+    # via uvicorn
+websockets==12.0
+    # via uvicorn
+xformers==0.0.26.post1
+    # via vllm
+yarl==1.9.4
+    # via aiohttp

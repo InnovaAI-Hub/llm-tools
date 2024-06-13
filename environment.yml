@@ -1,0 +1,21 @@
+name: llm-inference
+channels:
+  - conda-forge
+  - defaults
+  - pytorch 
+  - nvidia
+dependencies:
+  - python=3.10
+  - pydantic>=2.7.3
+  - pydantic-settings>=2.3.1
+  - pre-commit>=3.7.1
+  - ruff>=0.4.8
+  - transformers>=4.41.2
+  - pandas>=2.2.2
+  - accelerate>=0.31.0
+  - pytorch=2.3.0
+  - pytorch-cuda>=12.1
+  - cuda
+  - ray-default
+  - pip:
+    - vllm>=0.4.3

@@ -1,0 +1,24 @@
+config_version: '0.0.1'
+
+llm_model:
+  llm_url: "NousResearch/Meta-Llama-3-8B-Instruct"
+  max_new_tokens: 1024
+
+  terminators: 
+    - 128001 # tokenizer.eos_token_id
+    - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
+ 
+  temperature: 0.6
+  top_p: 0.9
+  pad_token_id: 128001
+ 
+  do_sample: true
+  
+  # Dataset settings
+  dataset: 
+    split_results_by: <|end_header_id|>\n\n
+    add_generation_prompt: true
+
+general:
+  runner_type: hf
+  device: auto
