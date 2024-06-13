@@ -8,3 +8,10 @@ wheels/
 
 # venv
 .venv
+
+# Don't track
+*.dt 
+*.dt.*
+
+# VS Code
+.vscode
