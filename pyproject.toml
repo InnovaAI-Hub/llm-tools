@@ -1,6 +1,6 @@
 [project]
 name = "llm-inference"
-version = "0.1.0"
+version = "0.0.1"
 description = "Add your description here"
 authors = [
     { name = "Artem Durynin", email = "artem5542@gmail.com" }
@@ -15,6 +15,8 @@ dependencies = [
     "accelerate>=0.31.0",
     "torch==2.3.0",
     "vllm>=0.4.3",
+    "pytest>=8.2.2",
+    "ipython>=8.25.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"

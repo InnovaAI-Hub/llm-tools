@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 
 from llm_inference.config.config import Config
+from llm_inference.dataset.msg_dataset import MsgDataset
 
 
 class AbstractModelRunner(ABC):
@@ -11,9 +12,9 @@ class AbstractModelRunner(ABC):
         self.model_config = model_config.llm_model
 
     @abstractmethod
-    def execute(self, input: str) -> str:
+    def execute_once(self, input: str) -> str:
         raise NotImplementedError
 
     @abstractmethod
-    def execute_batch(self, input: list[str]) -> list[str]:
+    def execute(self, input: MsgDataset) -> list[str]:
         raise NotImplementedError

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Tuple, Type
 
 from llm_inference.config.general_config import GeneralConfig
@@ -32,6 +33,6 @@ class Config(BaseSettings):
         return (YamlConfigSettingsSource(settings_cls),)
 
     @classmethod
-    def from_yaml(cls, yaml_file: str):
+    def from_yaml(cls, yaml_file: str | Path):
         cls.model_config["yaml_file"] = yaml_file
         return cls()
