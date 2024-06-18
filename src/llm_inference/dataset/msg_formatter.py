@@ -22,10 +22,10 @@ class AbstractMsgFormatter(ABC):
             assist_role_index = [x for x in range(2, msg_tmp.shape[0], 2)]
 
             is_correct_user_index: bool = (
-                msg_tmp["role"].iloc[user_role_index] == MsgRoleType.USER # type: ignore
+                msg_tmp["role"].iloc[user_role_index] == MsgRoleType.USER  # type: ignore
             ).all()  # type: ignore
             is_correct_assist_index: bool = (
-                msg_tmp["role"].iloc[assist_role_index] == MsgRoleType.ASSISTANT # type: ignore
+                msg_tmp["role"].iloc[assist_role_index] == MsgRoleType.ASSISTANT  # type: ignore
             ).all()  # type: ignore
 
             if not (is_correct_user_index and is_correct_assist_index):
@@ -38,7 +38,9 @@ class AbstractMsgFormatter(ABC):
 
             # Check that last msg by user
             if msg_tmp["role"].iloc[-1] != MsgRoleType.USER:
-                raise ValueError("MsgFormatter:is_correct_msg_df| Last msg is not by user")
+                raise ValueError(
+                    "MsgFormatter:is_correct_msg_df| Last msg is not by user"
+                )
 
     @abstractmethod
     def format_msg(self, content: str, role: MsgRoleType) -> str:
@@ -61,6 +63,7 @@ class AbstractMsgFormatter(ABC):
 
         return f"{self.get_prompt_start()}{formatted_msg.sum()}{self.get_prompt_end()}"
 
+
 class LLAMA3Formatter(AbstractMsgFormatter):
     def get_prompt_start(self) -> str:
         return "<|begin_of_text|>"
@@ -72,6 +75,7 @@ class LLAMA3Formatter(AbstractMsgFormatter):
 
     def get_prompt_end(self) -> str:
         return "<|start_header_id|>assistant<|end_header_id|>\n\n"
+
 
 class MsgFormatterFabric:
     @staticmethod

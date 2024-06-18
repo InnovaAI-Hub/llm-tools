@@ -2,6 +2,7 @@ from llm_inference.config.config import Config
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from vllm import LLM, SamplingParams
 
+
 # WARNING: This runner is not fully supported yet, not tested and should not be used.
 class VLLMRunner(AbstractModelRunner):
     def __init__(self, model_config: Config) -> None:

@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 import torch
@@ -10,7 +10,6 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 from transformers.tokenization_utils_base import BatchEncoding
-from typing_extensions import deprecated
 
 
 class MsgDatasetItem(BaseModel):
@@ -105,10 +104,13 @@ class MsgDataset(Dataset):
         model_output_tokens: list[list[int]] | torch.Tensor,
         orig_cnt_tokens: Optional[int] = None,
     ) -> list[str]:
-        batch = torch.tensor(model_output_tokens) if isinstance(model_output_tokens, list) else model_output_tokens
+        batch = (
+            torch.tensor(model_output_tokens)
+            if isinstance(model_output_tokens, list)
+            else model_output_tokens
+        )
         batch = batch[:, orig_cnt_tokens:]
         return self.tokenizer.batch_decode(batch, skip_special_tokens=True)
-
 
     def decode(self, model_output_tokens: list[int]) -> str:
         return self.tokenizer.decode(model_output_tokens)
