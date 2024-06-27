@@ -4,7 +4,6 @@ from llm_inference.dataset.msg_dataset import MsgDataset, MsgDatasetBatch
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_inference.runner.model_output_item import ModelOutputItem
 from torch.utils.data import DataLoader
-from torch.nn.attention import SDPBackend, sdpa_kernel
 from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,

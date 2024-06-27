@@ -17,9 +17,7 @@ from pathlib import Path
 import pandas as pd
 import torch
 from llm_inference.config.config import Config
-from llm_inference.config.model_config import DatasetConfig
 from llm_inference.dataset.msg_formatter import MsgFormatterFabric
-from llm_inference.type.model_type import ModelType
 from llm_inference.type.msg_role_type import MsgRoleType
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from torch.utils.data import Dataset
@@ -30,7 +28,7 @@ from transformers.tokenization_utils_base import BatchEncoding
 class MsgDatasetItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     sentence: str = Field(default="")
-    group_id: str | int = Field(default=0, )
+    group_id: str | int = Field(default=0)
     device: str = Field(default="cuda")
     tokens: Optional[BatchEncoding] = Field(default=None)
 
