@@ -9,7 +9,6 @@ from llm_inference.config.config import Config
 from llm_inference.dataset.msg_dataset import MsgDataset
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_inference.runner.runner_getter import RunnerGetter
-from llm_inference.type.model_type import ModelType
 
 
 class Pipeline(BaseModel):
@@ -36,14 +35,9 @@ class Pipeline(BaseModel):
         if self.config is None:
             raise RuntimeError("Pipeline::get_dataset| Config is not set")
 
-        return MsgDataset(
-            pd.read_csv(dataset_path),
-            ModelType.LLAMA3,
-            self.config.llm_model.dataset,
-            self.config.llm_model.llm_url,
-        )
+        return MsgDataset(pd.read_csv(dataset_path), self.config)
 
-    def run(self, dataset_path: Path):
+    def run(self, dataset: MsgDataset):
         logging.basicConfig(
             level=logging.DEBUG,
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -54,11 +48,9 @@ class Pipeline(BaseModel):
             if self.config is None:
                 raise RuntimeError("Pipeline::run| Config is not set")
 
-            dataset = self.get_dataset(dataset_path)
-            # TODO: Maybe move config var to get_runner?
             runner: AbstractModelRunner = RunnerGetter.get_runner(
-                self.config.general.runner_type
-            )(self.config)
+                self.config.general.runner_type, self.config
+            )
 
             return runner.execute(dataset)
 

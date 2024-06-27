@@ -3,6 +3,7 @@ import logging
 
 from llm_inference.config.config import Config
 from llm_inference.dataset.msg_dataset import MsgDataset
+from llm_inference.runner.model_output_item import ModelOutputItem
 
 
 class AbstractModelRunner(ABC):
@@ -16,5 +17,5 @@ class AbstractModelRunner(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def execute(self, input: MsgDataset) -> list[str]:
+    def execute(self, input: MsgDataset) -> list[ModelOutputItem]:
         raise NotImplementedError

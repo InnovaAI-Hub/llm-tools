@@ -1,5 +1,14 @@
-# Module for formatting messages.
-# WARNING: This class is not fully supported yet, not tested and should not be used.
+"""
+Description: Module for formatting messages. Maybe need switch to Jinja or similar.
+WARNING: This class is not fully supported yet, not tested and should not be used.
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 14.06.2024
+Version: 0.1
+Python Version: 3.10
+Dependencies: pandas
+"""
 
 import logging
 from abc import ABC, abstractmethod
@@ -30,10 +39,8 @@ class AbstractMsgFormatter(ABC):
 
             if not (is_correct_user_index and is_correct_assist_index):
                 raise ValueError(
-                    "MsgFormatter:is_correct_msg_df| Wrong order of roles. Right: system/user/assistant..."
-                    "Is user index correct: %s, is assist index correct: %s",
-                    is_correct_user_index,
-                    is_correct_assist_index,
+                    f"MsgFormatter:is_correct_msg_df| Wrong order of roles. Right: system/user/assistant..."
+                    f"Is user index correct: {is_correct_user_index}, is assist index correct: {is_correct_assist_index}",
                 )
 
             # Check that last msg by user

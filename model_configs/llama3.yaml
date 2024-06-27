@@ -16,9 +16,10 @@ llm_model:
   
   # Dataset settings
   dataset: 
-    split_results_by: <|end_header_id|>\n\n
     add_generation_prompt: true
 
 general:
   runner_type: hf
   device: auto
+  backup_path: "./backup"
+  num_workers: 1

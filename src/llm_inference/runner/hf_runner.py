@@ -2,7 +2,9 @@ import torch
 from llm_inference.config.config import Config
 from llm_inference.dataset.msg_dataset import MsgDataset, MsgDatasetBatch
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_inference.runner.model_output_item import ModelOutputItem
 from torch.utils.data import DataLoader
+from torch.nn.attention import SDPBackend, sdpa_kernel
 from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
@@ -35,8 +37,9 @@ class HFRunner(AbstractModelRunner):
             device_map="auto",
             torch_dtype=torch.bfloat16,
             # Attention works only with bfloat16 or float16
-            # NOTE: flash_attention_2 disabled, because it doesn't work with cuda 12.1
+            # Need move to config
             # attn_implementation="flash_attention_2",
+            attn_implementation="sdpa",
         )
         # For this you need to install optimum.
         # WARNING: This is not supported and not tested yet.
@@ -75,24 +78,25 @@ class HFRunner(AbstractModelRunner):
     # WARNING: NOT TESTED
     # This need to refactor. a lot of problems here.
     @torch.no_grad()
-    def execute(self, dataset: MsgDataset) -> list[str]:
+    def execute(self, dataset: MsgDataset) -> list[ModelOutputItem]:
         # model_input.tokenize(lambda x: self.tokenizer(x, return_tensors="pt"))
         dataloader: DataLoader[MsgDataset] = DataLoader(
             dataset,
-            batch_size=3,
-            # num_workers=5,
+            batch_size=self.model_config.dataset.batch_size,
+            num_workers=self.config.general.num_workers,
             # TODO: Need check can we use something better
             collate_fn=lambda x: MsgDatasetBatch(x, dataset.tokenizer),
             # TODO: Need check why not work with pin_memory
-            # pin_memory=True,
-            # TODO: Add support for different device
+            # pin_memory=False,
             # pin_memory_device="cuda",
         )
 
-        model_output: list[dict[str, str | int]] = []
+        model_output: list[ModelOutputItem] = []
+        # For this need flash attention, not needed with torch >= 2.1.1
+        # with sdpa_kernel(backends=SDPBackend.FLASH_ATTENTION):
         for batch_num, batch_tokens in enumerate(tqdm(dataloader)):
             # BUG: Need to fix this, we don't need to use `to`, because memory management is handled by dataloader.
-            batch_tokens.to("cuda")
+            # batch_tokens.to("cuda")
             output_tokens = self._generate_tokens(batch_tokens.batch_data).to("cpu")
             output_strings: list[str] = dataset.batch_decode(
                 output_tokens, batch_tokens.cnt_tokens_batch
@@ -100,10 +104,14 @@ class HFRunner(AbstractModelRunner):
 
             model_output.extend(
                 [
-                    {"group_num": group_id, "model_output": res}
+                    ModelOutputItem(group_id=group_id, text=res)
                     for res, group_id in zip(output_strings, batch_tokens.groups_id)
                 ]
             )
-            torch.save(output_tokens, f"output_tokens_backup(batch - {batch_num}).pt")
+            torch.save(
+                output_tokens,
+                self.config.general.backup_path
+                / f"output_tokens_backup(batch - {batch_num}).pt",
+            )
 
         return model_output

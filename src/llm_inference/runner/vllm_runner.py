@@ -1,6 +1,9 @@
 from llm_inference.config.config import Config
+from llm_inference.dataset.msg_dataset import MsgDataset, MsgDatasetBatch
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from vllm import LLM, SamplingParams
+
+from llm_inference.runner.model_output_item import ModelOutputItem
 
 
 # WARNING: This runner is not fully supported yet, not tested and should not be used.
@@ -15,7 +18,7 @@ class VLLMRunner(AbstractModelRunner):
         )
         self.model = LLM(self.model_config.llm_url, dtype="bfloat16")
 
-    def execute(self, input: str) -> str:
+    def execute_once(self, input: str) -> str:
         model_output = self.model.generate(
             input, sampling_params=self.params, use_tqdm=True
         )
@@ -24,3 +27,20 @@ class VLLMRunner(AbstractModelRunner):
             raise RuntimeWarning("VLLMRunner::execute| Model output is empty")
 
         return model_output[0].outputs[0].text
+
+    def execute(self, input: MsgDataset) -> list[ModelOutputItem]:
+        # Use or not batches and dataloader?
+
+        # Try with one batch.
+        batch_list = [item for item in input]
+        batch = MsgDatasetBatch(batch_list, input.tokenizer)
+        model_output_tmp = self.model.generate(
+            prompts=batch.sentences, sampling_params=self.params, use_tqdm=True
+        )
+
+        model_output: list[ModelOutputItem] = [
+            ModelOutputItem(group_id, item.outputs[0].text)
+            for item, group_id in zip(model_output_tmp, batch.groups_id)
+        ]
+
+        return model_output
