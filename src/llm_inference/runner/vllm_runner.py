@@ -1,5 +1,5 @@
 from llm_inference.config.config import Config
-from llm_inference.dataset.msg_dataset import MsgDataset, MsgDatasetBatch
+from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from vllm import LLM, SamplingParams
 
@@ -28,19 +28,23 @@ class VLLMRunner(AbstractModelRunner):
 
         return model_output[0].outputs[0].text
 
-    def execute(self, input: MsgDataset) -> list[ModelOutputItem]:
+    def execute(self, input: HfMsgDataset) -> list[ModelOutputItem]:
         # Use or not batches and dataloader?
 
         # Try with one batch.
         batch_list = [item for item in input]
-        batch = MsgDatasetBatch(batch_list, input.tokenizer)
+
         model_output_tmp = self.model.generate(
-            prompts=batch.sentences, sampling_params=self.params, use_tqdm=True
+            prompts=[x.sentence for x in batch_list],
+            sampling_params=self.params,
+            use_tqdm=True,
         )
 
         model_output: list[ModelOutputItem] = [
             ModelOutputItem(group_id, item.outputs[0].text)
-            for item, group_id in zip(model_output_tmp, batch.groups_id)
+            for item, group_id in zip(
+                model_output_tmp, [x.group_id for x in batch_list]
+            )
         ]
 
         return model_output

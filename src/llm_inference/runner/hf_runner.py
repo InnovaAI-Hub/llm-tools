@@ -1,6 +1,6 @@
 import torch
 from llm_inference.config.config import Config
-from llm_inference.dataset.msg_dataset import MsgDataset, MsgDatasetBatch
+from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_inference.runner.model_output_item import ModelOutputItem
 from torch.utils.data import DataLoader
@@ -10,6 +10,9 @@ from transformers import (
     AutoTokenizer,
     GenerationConfig,
 )
+
+# From hf
+from datasets import Dataset
 from transformers.tokenization_utils_base import BatchEncoding
 
 
@@ -77,14 +80,13 @@ class HFRunner(AbstractModelRunner):
     # WARNING: NOT TESTED
     # This need to refactor. a lot of problems here.
     @torch.no_grad()
-    def execute(self, dataset: MsgDataset) -> list[ModelOutputItem]:
+    def execute(self, dataset: HfMsgDataset) -> list[ModelOutputItem]:
         # model_input.tokenize(lambda x: self.tokenizer(x, return_tensors="pt"))
-        dataloader: DataLoader[MsgDataset] = DataLoader(
-            dataset,
+        dataloader: DataLoader[Dataset] = DataLoader(
+            dataset.get_hf_dataset(),
+            shuffle=False,
             batch_size=self.model_config.dataset.batch_size,
             num_workers=self.config.general.num_workers,
-            # TODO: Need check can we use something better
-            collate_fn=lambda x: MsgDatasetBatch(x, dataset.tokenizer),
             # TODO: Need check why not work with pin_memory
             # pin_memory=False,
             # pin_memory_device="cuda",
@@ -95,16 +97,17 @@ class HFRunner(AbstractModelRunner):
         # with sdpa_kernel(backends=SDPBackend.FLASH_ATTENTION):
         for batch_num, batch_tokens in enumerate(tqdm(dataloader)):
             # BUG: Need to fix this, we don't need to use `to`, because memory management is handled by dataloader.
-            # batch_tokens.to("cuda")
-            output_tokens = self._generate_tokens(batch_tokens.batch_data).to("cpu")
-            output_strings: list[str] = dataset.batch_decode(
-                output_tokens, batch_tokens.cnt_tokens_batch
-            )
+            cnt_tokens: int = batch_tokens["input_ids"][0].shape[0]
+            output_tokens = self._generate_tokens(batch_tokens).to("cpu")
+            output_strings: list[str] = dataset.batch_decode(output_tokens, cnt_tokens)
 
+            first_index_ds = batch_num * self.model_config.dataset.batch_size
+            last_index_ds = first_index_ds + self.model_config.dataset.batch_size
+            model_groups = [x.group_id for x in dataset[first_index_ds:last_index_ds]]
             model_output.extend(
                 [
                     ModelOutputItem(group_id=group_id, text=res)
-                    for res, group_id in zip(output_strings, batch_tokens.groups_id)
+                    for res, group_id in zip(output_strings, model_groups)
                 ]
             )
             torch.save(

@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from pydantic import Field, BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from llm_inference.config.config import Config
-from llm_inference.dataset.msg_dataset import MsgDataset
+from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_inference.runner.runner_getter import RunnerGetter
 
@@ -31,13 +31,13 @@ class Pipeline(BaseModel):
 
         raise RuntimeError("Pipeline::get_config| Config is not set")
 
-    def get_dataset(self, dataset_path: Path) -> MsgDataset:
+    def get_dataset(self, dataset_path: Path) -> HfMsgDataset:
         if self.config is None:
             raise RuntimeError("Pipeline::get_dataset| Config is not set")
 
-        return MsgDataset(pd.read_csv(dataset_path), self.config)
+        return HfMsgDataset(pd.read_csv(dataset_path), self.config)
 
-    def run(self, dataset: MsgDataset):
+    def run(self, dataset: HfMsgDataset):
         logging.basicConfig(
             level=logging.DEBUG,
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
