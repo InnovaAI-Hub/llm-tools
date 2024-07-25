@@ -22,7 +22,6 @@ from llm_inference.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
 from llm_inference.type.model_type import ModelType
 from llm_inference.type.msg_role_type import MsgRoleType
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
-from transformers.tokenization_utils_base import BatchEncoding
 
 
 # WARNING: This class is not fully supported yet, not tested and should not be used.
@@ -88,7 +87,7 @@ class HfMsgDataset(AbstractMsgDataset):
 
     @override
     def format_dataset(self, messages_df: pd.DataFrame) -> list[MsgDatasetItem]:
-        # Apply transformations. 
+        # Apply transformations.
         # NOTE: Maybe need to remove it?
         # messages_df["role"] = messages_df["role"].apply(
         #     lambda x: MsgRoleType(x)  # type: ignore
