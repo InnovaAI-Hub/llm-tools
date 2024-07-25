@@ -6,13 +6,13 @@ Date Created: 13.06.2024
 Date Modified: 14.06.2024
 Version: 0.1
 Python Version: 3.10
-Dependencies: pydantic, llm_inference
+Dependencies: pydantic, llm_tools.llm_inference
 """
 
-from llm_inference.type.model_type import ModelType
-from llm_inference.type.url_type import UrlType
-from llm_inference.type.model_dtype import ModelDType
-from llm_inference.config.dataset_config import DatasetConfig
+from llm_tools.type.model_type import ModelType
+from llm_tools.type.url_type import UrlType
+from llm_tools.type.model_dtype import ModelDType
+from llm_tools.config.dataset_config import DatasetConfig
 from pydantic import BaseModel, Field
 
 

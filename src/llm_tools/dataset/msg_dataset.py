@@ -16,9 +16,8 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from llm_inference.config.config import Config
-from llm_inference.dataset.msg_formatter import MsgFormatterFabric
-from llm_inference.type.msg_role_type import MsgRoleType
+from llm_tools.config.config import Config
+from llm_tools.dataset.msg_formatter import MsgFormatterFabric
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from transformers.tokenization_utils_base import BatchEncoding
 
@@ -29,7 +28,7 @@ class MsgDatasetItem(BaseModel):
     sentence: str = Field(default="")
     group_id: str | int = Field(default=0)
 
-    device: str = Field(default="cuda")
+    device: str = Field(default="cpu")
     tokens: Optional[BatchEncoding] = Field(default=None)
 
     @computed_field

@@ -4,10 +4,10 @@ import torch
 
 # From hf
 from datasets import Dataset
-from llm_inference.config.config import Config
-from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
-from llm_inference.runner.abstract_model_runner import AbstractModelRunner
-from llm_inference.runner.model_output_item import ModelOutputItem
+from llm_tools.config.config import Config
+from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import (
@@ -120,4 +120,5 @@ class HFRunner(AbstractModelRunner):
                 / f"output_tokens_backup(batch - {batch_num}).pt",
             )
 
+        torch.cuda.empty_cache()
         return model_output

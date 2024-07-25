@@ -1,4 +1,4 @@
-from llm_inference.config.validators import Validator
+from llm_tools.config.validators import Validator
 from pydantic.functional_validators import AfterValidator
 from typing import Annotated
 

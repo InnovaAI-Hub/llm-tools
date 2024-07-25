@@ -12,8 +12,8 @@ Dependencies: pydantic
 from pathlib import Path
 from typing import Tuple, Type
 
-from llm_inference.config.general_config import GeneralConfig
-from llm_inference.config.model_config import ModelConfigLLM
+from llm_tools.config.evironment_config import EnvironmentConfig
+from llm_tools.config.model_config import ModelConfigLLM
 from pydantic import Field
 from pydantic_settings import (
     BaseSettings,
@@ -33,7 +33,7 @@ class Config(BaseSettings):
     )
 
     config_version: str = Field(default="1.0.0", frozen=True)
-    general: GeneralConfig = Field(default=GeneralConfig(), frozen=True)
+    general: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
     llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
 
     @classmethod

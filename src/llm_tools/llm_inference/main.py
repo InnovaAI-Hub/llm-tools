@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from llm_inference.pipeline import Pipeline
+from llm_tools.llm_inference.pipeline import Pipeline
 
 
 def parse_args() -> argparse.Namespace:

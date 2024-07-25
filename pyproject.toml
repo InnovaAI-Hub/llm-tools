@@ -1,5 +1,5 @@
 [project]
-name = "llm-inference"
+name = "llm-tools"
 version = "0.0.1"
 description = "Add your description here"
 authors = [
@@ -14,12 +14,13 @@ dependencies = [
     "pandas>=2.2.2",
     "accelerate>=0.31.0",
     "torch==2.3.0",
-    "vllm>=0.4.3",
+    
     "pytest>=8.2.2",
     "ipython>=8.25.0",
+    "openai"
 ]
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.12"
 
 [build-system]
 requires = ["hatchling"]
@@ -33,7 +34,7 @@ dev-dependencies = []
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/llm_inference"]
+packages = ["src/llm_tools"]
 
 [[tool.rye.sources]]
 name = "torch"

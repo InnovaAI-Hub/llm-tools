@@ -3,10 +3,10 @@ channels:
   - conda-forge
   - defaults
   - nvidia
-  - pytorch 
+  - pytorch
   - xformers
 dependencies:
-  - python=3.11
+  - python=3.12
   - pydantic>=2.7.3
   - pydantic-settings>=2.3.1
   - pre-commit>=3.7.1
@@ -17,10 +17,11 @@ dependencies:
   - pytorch=2.3.0
   - pytorch-cuda>=12.1
   - cuda
-  - xformers 
-  - ray-default>=2.24.0
+  - openai
+  - xformers
   - pytest>=8.2.2
   # - flash-attn>=2.5.8
   - pip:
-    - vllm>=0.4.3
-    - "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
+      - ray>=2.31.0
+    # - vllm==0.4.3
+    # - "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"

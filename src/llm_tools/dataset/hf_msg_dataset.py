@@ -17,10 +17,10 @@ from typing import Optional, override
 import pandas as pd
 import torch
 from datasets import Dataset
-from llm_inference.config.config import Config
-from llm_inference.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
-from llm_inference.type.model_type import ModelType
-from llm_inference.type.msg_role_type import MsgRoleType
+from llm_tools.config.config import Config
+from llm_tools.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
+from llm_tools.type.model_type import ModelType
+from llm_tools.type.msg_role_type import MsgRoleType
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 
 
@@ -78,7 +78,7 @@ class HfMsgDataset(AbstractMsgDataset):
 
     def _format_group(self, group_id: str | int, group: pd.DataFrame) -> MsgDatasetItem:
         prompt: str = self.tokenizer.apply_chat_template(
-            group.to_dict("records"),
+            group.to_dict("records"),  # type: ignore
             add_generation_prompt=self.configs.add_generation_prompt,
             tokenize=False,
         )  # type: ignore
@@ -99,7 +99,7 @@ class HfMsgDataset(AbstractMsgDataset):
         messages_df.to_dict("records")
 
         return [
-            self._format_group(group_id=group_id, group=group)
+            self._format_group(group_id=group_id, group=group)  # type: ignore
             for group_id, group in messages_df.groupby("group_id")
         ]
 

@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import logging
 
-from llm_inference.config.config import Config
-from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
-from llm_inference.runner.model_output_item import ModelOutputItem
+from llm_tools.config.config import Config
+from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 
 
 class AbstractModelRunner(ABC):

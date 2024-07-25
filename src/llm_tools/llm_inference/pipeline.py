@@ -5,10 +5,10 @@ from typing import Optional
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 
-from llm_inference.config.config import Config
-from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
-from llm_inference.runner.abstract_model_runner import AbstractModelRunner
-from llm_inference.runner.runner_getter import RunnerGetter
+from llm_tools.config.config import Config
+from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.llm_inference.runner.runner_getter import RunnerGetter
 
 
 class Pipeline(BaseModel):

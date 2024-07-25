@@ -1,6 +1,7 @@
 """
 Description: Module for formatting messages. Maybe need switch to Jinja or similar.
 WARNING: This class is not fully supported yet, not tested and should not be used.
+    It class will be refactored. And it will be use only for llama.cpp
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
@@ -14,8 +15,8 @@ import logging
 from abc import ABC, abstractmethod
 
 import pandas as pd
-from llm_inference.type.model_type import ModelType
-from llm_inference.type.msg_role_type import MsgRoleType
+from llm_tools.type.model_type import ModelType
+from llm_tools.type.msg_role_type import MsgRoleType
 
 
 class AbstractMsgFormatter(ABC):
