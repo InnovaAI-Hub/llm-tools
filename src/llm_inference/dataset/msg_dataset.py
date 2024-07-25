@@ -25,8 +25,10 @@ from transformers.tokenization_utils_base import BatchEncoding
 
 class MsgDatasetItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
     sentence: str = Field(default="")
     group_id: str | int = Field(default=0)
+
     device: str = Field(default="cuda")
     tokens: Optional[BatchEncoding] = Field(default=None)
 
@@ -57,6 +59,11 @@ class AbstractMsgDataset(ABC):
     ) -> "AbstractMsgDataset":
         raise NotImplementedError
 
+    # @staticmethod
+    # @abstractmethod
+    # def get_formatter(model_type: ModelType) -> MsgFormatterFabric:
+    #     raise NotImplementedError
+
     @staticmethod
     @abstractmethod
     def from_df_one_sys(
@@ -64,19 +71,9 @@ class AbstractMsgDataset(ABC):
     ) -> "AbstractMsgDataset":
         raise NotImplementedError
 
+    @abstractmethod
     def format_dataset(self, messages_df: pd.DataFrame) -> list[MsgDatasetItem]:
-        # Apply transformations
-        messages_df["role"] = messages_df["role"].apply(
-            lambda x: MsgRoleType(x)  # type: ignore
-        )
-
-        if "group_id" not in messages_df.columns:
-            messages_df["group_id"] = 0
-
-        return [
-            MsgDatasetItem(sentence=self.fmt.format_dialog(group), group_id=id)
-            for id, group in messages_df.groupby("group_id")
-        ]
+        raise NotImplementedError
 
     def __len__(self) -> int:
         return len(self.dataset)

@@ -1,4 +1,9 @@
+from typing import override
+
 import torch
+
+# From hf
+from datasets import Dataset
 from llm_inference.config.config import Config
 from llm_inference.dataset.hf_msg_dataset import HfMsgDataset
 from llm_inference.runner.abstract_model_runner import AbstractModelRunner
@@ -10,9 +15,6 @@ from transformers import (
     AutoTokenizer,
     GenerationConfig,
 )
-
-# From hf
-from datasets import Dataset
 from transformers.tokenization_utils_base import BatchEncoding
 
 
@@ -58,6 +60,7 @@ class HFRunner(AbstractModelRunner):
             generation_config=self.generation_config,
         )
 
+    @override
     @torch.no_grad()
     def execute_once(self, model_input: str) -> str:
         tokenizer = self._get_tokenizer()
@@ -79,6 +82,7 @@ class HFRunner(AbstractModelRunner):
 
     # WARNING: NOT TESTED
     # This need to refactor. a lot of problems here.
+    @override
     @torch.no_grad()
     def execute(self, dataset: HfMsgDataset) -> list[ModelOutputItem]:
         # model_input.tokenize(lambda x: self.tokenizer(x, return_tensors="pt"))

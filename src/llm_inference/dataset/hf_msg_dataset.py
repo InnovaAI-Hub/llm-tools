@@ -12,34 +12,21 @@ Dependencies: pydantic, torch, transformers, pandas
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, override
 
 import pandas as pd
 import torch
 from datasets import Dataset
 from llm_inference.config.config import Config
-from llm_inference.dataset.msg_formatter import MsgFormatterFabric
+from llm_inference.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
 from llm_inference.type.model_type import ModelType
 from llm_inference.type.msg_role_type import MsgRoleType
-from pydantic import BaseModel, ConfigDict, Field, computed_field
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 from transformers.tokenization_utils_base import BatchEncoding
 
 
-class MsgDatasetItem(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    sentence: str = Field(default="")
-    group_id: str | int = Field(default=0)
-    device: str = Field(default="cuda")
-    tokens: Optional[BatchEncoding] = Field(default=None)
-
-    @computed_field
-    def cnt_tokens(self) -> int:
-        return self.tokens["input_ids"].shape[1] if self.tokens is not None else 0  # type: ignore
-
-
 # WARNING: This class is not fully supported yet, not tested and should not be used.
-class HfMsgDataset:
+class HfMsgDataset(AbstractMsgDataset):
     def __init__(
         self,
         messages_df: pd.DataFrame,
@@ -55,8 +42,9 @@ class HfMsgDataset:
         self.device = configs.general.device_type
         self.configs = configs.llm_model.dataset
         self.llm_model_type: ModelType = configs.llm_model.llm_model_type
-        self.fmt = MsgFormatterFabric.get_formatter(self.llm_model_type)()
-        self.dataset: list[MsgDatasetItem] = self.format_dataset(messages_df)
+        self.dataset: list[MsgDatasetItem] = self.format_dataset(
+            messages_df=messages_df
+        )
 
     @staticmethod
     def get_tokenizer(url: str):
@@ -89,18 +77,31 @@ class HfMsgDataset:
 
         return HfMsgDataset(formatted_df, configs)
 
+    def _format_group(self, group_id: str | int, group: pd.DataFrame) -> MsgDatasetItem:
+        prompt: str = self.tokenizer.apply_chat_template(
+            group.to_dict("records"),
+            add_generation_prompt=self.configs.add_generation_prompt,
+            tokenize=False,
+        )  # type: ignore
+
+        return MsgDatasetItem(sentence=prompt, group_id=group_id)
+
+    @override
     def format_dataset(self, messages_df: pd.DataFrame) -> list[MsgDatasetItem]:
-        # Apply transformations
-        messages_df["role"] = messages_df["role"].apply(
-            lambda x: MsgRoleType(x)  # type: ignore
-        )
+        # Apply transformations. 
+        # NOTE: Maybe need to remove it?
+        # messages_df["role"] = messages_df["role"].apply(
+        #     lambda x: MsgRoleType(x)  # type: ignore
+        # )
 
         if "group_id" not in messages_df.columns:
             messages_df["group_id"] = 0
 
+        messages_df.to_dict("records")
+
         return [
-            MsgDatasetItem(sentence=self.fmt.format_dialog(group), group_id=id)
-            for id, group in messages_df.groupby("group_id")
+            self._format_group(group_id=group_id, group=group)
+            for group_id, group in messages_df.groupby("group_id")
         ]
 
     def tokenize(self, item: MsgDatasetItem) -> None:

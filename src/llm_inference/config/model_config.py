@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 class ModelConfigLLM(BaseModel):
     llm_url: UrlType = Field(default="", frozen=True)
     llm_model_type: ModelType = Field(default=ModelType.LLAMA3, frozen=True)
+    token: str = Field(default="undefined", frozen=True)
 
     max_new_tokens: int = Field(default=512, frozen=True)
 

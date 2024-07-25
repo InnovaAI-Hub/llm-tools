@@ -25,12 +25,16 @@ from pydantic_settings import (
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
-        yaml_file="config.yaml", yaml_file_encoding="utf-8"
+        yaml_file="config.yaml",
+        yaml_file_encoding="utf-8",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
     )
 
     config_version: str = Field(default="1.0.0", frozen=True)
     general: GeneralConfig = Field(default=GeneralConfig(), frozen=True)
-    llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(), frozen=True)
+    llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
 
     @classmethod
     def settings_customise_sources(
@@ -41,7 +45,12 @@ class Config(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
-        return (YamlConfigSettingsSource(settings_cls),)
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            YamlConfigSettingsSource(settings_cls),
+        )
 
     @classmethod
     def from_yaml(cls, yaml_file: str | Path):
