@@ -12,7 +12,8 @@ Dependencies: pydantic
 from pathlib import Path
 from typing import Tuple, Type
 
-from llm_tools.config.evironment_config import EnvironmentConfig
+from llm_tools.config.dataset_config import DatasetConfig
+from llm_tools.config.environment_config import EnvironmentConfig
 from llm_tools.config.model_config import ModelConfigLLM
 from pydantic import Field
 from pydantic_settings import (
@@ -33,8 +34,9 @@ class Config(BaseSettings):
     )
 
     config_version: str = Field(default="1.0.0", frozen=True)
-    general: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
+    environment: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
     llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
+    dataset: DatasetConfig = Field(default=DatasetConfig(), frozen=True)
 
     @classmethod
     def settings_customise_sources(

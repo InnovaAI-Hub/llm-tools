@@ -49,7 +49,7 @@ class Pipeline(BaseModel):
                 raise RuntimeError("Pipeline::run| Config is not set")
 
             runner: AbstractModelRunner = RunnerGetter.get_runner(
-                self.config.general.runner_type, self.config
+                self.config.environment.runner_type, self.config
             )
 
             return runner.execute(dataset)

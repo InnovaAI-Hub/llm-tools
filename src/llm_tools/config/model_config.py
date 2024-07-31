@@ -12,7 +12,6 @@ Dependencies: pydantic, llm_tools.llm_inference
 from llm_tools.type.model_type import ModelType
 from llm_tools.type.url_type import UrlType
 from llm_tools.type.model_dtype import ModelDType
-from llm_tools.config.dataset_config import DatasetConfig
 from pydantic import BaseModel, Field
 
 
@@ -29,7 +28,5 @@ class ModelConfigLLM(BaseModel):
     pad_token_id: int = Field(default=0, frozen=True)
 
     do_sample: bool = Field(default=False, frozen=True)
-
-    dataset: DatasetConfig = Field(default=DatasetConfig(), frozen=True)
 
     dtype: ModelDType = Field(default=ModelDType.BF16, frozen=True)

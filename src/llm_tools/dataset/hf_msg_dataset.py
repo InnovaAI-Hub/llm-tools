@@ -10,7 +10,6 @@ Python Version: 3.10
 Dependencies: pydantic, torch, transformers, pandas
 """
 
-import logging
 from pathlib import Path
 from typing import Optional, override
 
@@ -19,7 +18,6 @@ import torch
 from datasets import Dataset
 from llm_tools.config.config import Config
 from llm_tools.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
-from llm_tools.type.model_type import ModelType
 from llm_tools.type.msg_role_type import MsgRoleType
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 
@@ -31,19 +29,11 @@ class HfMsgDataset(AbstractMsgDataset):
         messages_df: pd.DataFrame,
         configs: Config,
     ) -> None:
-        self.logger = logging.getLogger(__name__)
-
-        # We need to set `use_fast` to false if we want use multiprocessing.
+        super().__init__(messages_df, configs)
         self.tokenizer: PreTrainedTokenizer | PreTrainedTokenizerFast = (
             self.get_tokenizer(configs.llm_model.llm_url)
         )
-
-        self.device = configs.general.device_type
-        self.configs = configs.llm_model.dataset
-        self.llm_model_type: ModelType = configs.llm_model.llm_model_type
-        self.dataset: list[MsgDatasetItem] = self.format_dataset(
-            messages_df=messages_df
-        )
+        self.dataset = self.format_dataset(messages_df=messages_df)
 
     @staticmethod
     def get_tokenizer(url: str):
@@ -53,6 +43,31 @@ class HfMsgDataset(AbstractMsgDataset):
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
         return tokenizer
+
+    @staticmethod
+    def prepare_to_train(messages_df: pd.DataFrame, configs: Config) -> Dataset:
+        # First we need to split dialogs. For every group we need to create the
+        # subgroups like this: sys + usr, sys + usr + assist + usr
+
+        new_dataset: list[pd.DataFrame] = []
+        answers: list[pd.DataFrame] = []
+
+        for group_id, group in messages_df.groupby("group_id"):
+            formatted = [group[:i] for i in range(2, group.shape[0], 2)]
+            # TODO: Move to enum, some role can have a different name.
+            answers.append(
+                group.loc[group["role"] == "assistant"][["group_id", "content"]]
+            )
+
+            formatted = [df.astype(str) for df in formatted]
+            for i, formatted_group in enumerate(formatted):
+                formatted_group.loc[:, "group_id"] = f"{group_id}.{i}"
+
+            new_dataset.extend(formatted)
+
+        formatted_df = HfMsgDataset(pd.concat(new_dataset), configs)
+        formatted_df.add_valid_data(pd.concat(answers)["content"].to_list())
+        return formatted_df.get_hf_dataset()
 
     @staticmethod
     def from_csv(csv_path: Path, configs: Config) -> "HfMsgDataset":
@@ -96,8 +111,6 @@ class HfMsgDataset(AbstractMsgDataset):
         if "group_id" not in messages_df.columns:
             messages_df["group_id"] = 0
 
-        messages_df.to_dict("records")
-
         return [
             self._format_group(group_id=group_id, group=group)  # type: ignore
             for group_id, group in messages_df.groupby("group_id")
@@ -133,10 +146,19 @@ class HfMsgDataset(AbstractMsgDataset):
             batch["input_sentence"], padding=True, return_tensors="pt"
         ).to("cuda")
 
+    def add_valid_data(self, valid_data: list[str]):
+        assert len(self.dataset) == len(valid_data)
+        # TODO: Add merge by group_id
+        for i, item in enumerate(valid_data):
+            self.dataset[i].valid = item
+
     def get_hf_dataset(self) -> Dataset:
         sentence = [item.sentence for item in self.dataset]
         groups_id = [item.group_id for item in self.dataset]
-        dataset = Dataset.from_dict({"input_sentence": sentence, "group_id": groups_id})
+        valid = [item.valid for item in self.dataset]
+        dataset = Dataset.from_dict(
+            {"input_sentence": sentence, "group_id": groups_id, "valid": valid}
+        )
 
         return dataset.with_transform(self.batch_encode)
 

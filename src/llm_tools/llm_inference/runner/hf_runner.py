@@ -89,8 +89,8 @@ class HFRunner(AbstractModelRunner):
         dataloader: DataLoader[Dataset] = DataLoader(
             dataset.get_hf_dataset(),
             shuffle=False,
-            batch_size=self.model_config.dataset.batch_size,
-            num_workers=self.config.general.num_workers,
+            batch_size=self.config.dataset.batch_size,
+            num_workers=self.config.environment.num_workers,
             # TODO: Need check why not work with pin_memory
             # pin_memory=False,
             # pin_memory_device="cuda",
@@ -105,8 +105,8 @@ class HFRunner(AbstractModelRunner):
             output_tokens = self._generate_tokens(batch_tokens).to("cpu")
             output_strings: list[str] = dataset.batch_decode(output_tokens, cnt_tokens)
 
-            first_index_ds = batch_num * self.model_config.dataset.batch_size
-            last_index_ds = first_index_ds + self.model_config.dataset.batch_size
+            first_index_ds = batch_num * self.config.dataset.batch_size
+            last_index_ds = first_index_ds + self.config.dataset.batch_size
             model_groups = [x.group_id for x in dataset[first_index_ds:last_index_ds]]
             model_output.extend(
                 [
@@ -116,7 +116,7 @@ class HFRunner(AbstractModelRunner):
             )
             torch.save(
                 output_tokens,
-                self.config.general.backup_path
+                self.config.environment.backup_path
                 / f"output_tokens_backup(batch - {batch_num}).pt",
             )
 

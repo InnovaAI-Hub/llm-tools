@@ -17,7 +17,6 @@ from typing import Optional
 
 import pandas as pd
 from llm_tools.config.config import Config
-from llm_tools.dataset.msg_formatter import MsgFormatterFabric
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from transformers.tokenization_utils_base import BatchEncoding
 
@@ -26,6 +25,7 @@ class MsgDatasetItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     sentence: str = Field(default="")
+    valid: str = Field(default="")
     group_id: str | int = Field(default=0)
 
     device: str = Field(default="cpu")
@@ -45,11 +45,9 @@ class AbstractMsgDataset(ABC):
     ) -> None:
         self.logger = logging.getLogger(__name__)
 
-        self.device = configs.general.device_type
-        self.configs = configs.llm_model.dataset
+        self.device = configs.environment.device_type
+        self.configs = configs.dataset
         self.llm_model_type = configs.llm_model.llm_model_type
-        self.fmt = MsgFormatterFabric.get_formatter(self.llm_model_type)()
-        self.dataset = self.format_dataset(messages_df)
 
     @staticmethod
     @abstractmethod
