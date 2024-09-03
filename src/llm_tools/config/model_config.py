@@ -9,23 +9,28 @@ Python Version: 3.10
 Dependencies: pydantic, llm_tools.llm_inference
 """
 
+from typing import Optional
+from pydantic_settings import BaseSettings
 from llm_tools.type.model_type import ModelType
 from llm_tools.type.url_type import UrlType
 from llm_tools.type.model_dtype import ModelDType
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 
-class ModelConfigLLM(BaseModel):
-    llm_url: UrlType = Field(default="", frozen=True)
+class ModelConfigLLM(BaseSettings):
+    llm_url: UrlType = Field(default="undefined", frozen=True)
     llm_model_type: ModelType = Field(default=ModelType.LLAMA3, frozen=True)
     token: str = Field(default="undefined", frozen=True)
 
     max_new_tokens: int = Field(default=512, frozen=True)
+    max_model_len: Optional[int] = Field(default=None, frozen=True)
 
     temperature: float = Field(default=0.0, frozen=True, ge=0.0, le=1.0)
+    top_p: float = Field(default=0.5, frozen=True, ge=0.0, le=1.0)
+
     terminators: list[int] = Field(default=[], frozen=True)
-    top_p: float = Field(default=0.0, frozen=True, ge=0.0, le=1.0)
-    pad_token_id: int = Field(default=0, frozen=True)
+    pad_token_id: Optional[int] = Field(default=None, frozen=True)
+    pad_token: Optional[str] = Field(default=None, frozen=True)
 
     do_sample: bool = Field(default=False, frozen=True)
 

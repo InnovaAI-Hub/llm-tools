@@ -14,6 +14,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     GenerationConfig,
+    DataCollatorForLanguageModeling,
 )
 from transformers.tokenization_utils_base import BatchEncoding
 
@@ -44,7 +45,9 @@ class HFRunner(AbstractModelRunner):
             # Need move to config
             # attn_implementation="flash_attention_2",
             attn_implementation="sdpa",
+            low_cpu_mem_usage=True,
         )
+
         # For this you need to install optimum.
         # WARNING: This is not supported and not tested yet.
         # llm_model = llm_model.to_bettertransformer()
@@ -92,15 +95,21 @@ class HFRunner(AbstractModelRunner):
             batch_size=self.config.dataset.batch_size,
             num_workers=self.config.environment.num_workers,
             # TODO: Need check why not work with pin_memory
-            # pin_memory=False,
-            # pin_memory_device="cuda",
+            pin_memory=True,
+            pin_memory_device="cuda",
+            collate_fn=DataCollatorForLanguageModeling(
+                tokenizer=dataset.tokenizer, mlm=False
+            ),
         )
 
         model_output: list[ModelOutputItem] = []
         # For this need flash attention, not needed with torch >= 2.1.1
-        # with sdpa_kernel(backends=SDPBackend.FLASH_ATTENTION):
-        for batch_num, batch_tokens in enumerate(tqdm(dataloader)):
+        # with torch.nn.attention.sdpa_kernel(
+        #     backends=torch.nn.attention.SDPBackend.FLASH_ATTENTION
+        # ):
+        for batch_num, batch_tokens in enumerate(tqdm(dataloader, desc="Run")):
             # BUG: Need to fix this, we don't need to use `to`, because memory management is handled by dataloader.
+            batch_tokens = batch_tokens.to("cuda")
             cnt_tokens: int = batch_tokens["input_ids"][0].shape[0]
             output_tokens = self._generate_tokens(batch_tokens).to("cpu")
             output_strings: list[str] = dataset.batch_decode(output_tokens, cnt_tokens)

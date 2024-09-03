@@ -10,18 +10,20 @@ Dependencies: pydantic
 """
 
 from pathlib import Path
-from typing import Tuple, Type
+from typing import Optional, Tuple, Type
 
 from llm_tools.config.dataset_config import DatasetConfig
 from llm_tools.config.environment_config import EnvironmentConfig
 from llm_tools.config.model_config import ModelConfigLLM
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+
+from llm_tools.config.train_config import TrainConfig
 
 
 class Config(BaseSettings):
@@ -31,12 +33,23 @@ class Config(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
+        validate_assignment=True,
+        validate_default=False,
     )
 
-    config_version: str = Field(default="1.0.0", frozen=True)
+    config_version: str = Field(default="0.0.3", frozen=True)
     environment: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
     llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
     dataset: DatasetConfig = Field(default=DatasetConfig(), frozen=True)
+    train: Optional[TrainConfig] = Field(default=None, frozen=True)
+
+    @field_validator("config_version")
+    def validate_config_version(cls, config_version: str) -> str:
+        if config_version != "0.0.3":
+            raise ValueError(
+                f"Config version {config_version} is not supported. Check current version in docs."
+            )
+        return config_version
 
     @classmethod
     def settings_customise_sources(
@@ -56,5 +69,7 @@ class Config(BaseSettings):
 
     @classmethod
     def from_yaml(cls, yaml_file: str | Path):
+        assert Path(yaml_file).exists(), "Check that file exists."
+
         cls.model_config["yaml_file"] = yaml_file
         return cls()

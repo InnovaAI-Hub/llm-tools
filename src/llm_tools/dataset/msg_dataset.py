@@ -25,6 +25,7 @@ class MsgDatasetItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     sentence: str = Field(default="")
+    # Rename `valid`, it's `target` or `labels`
     valid: str = Field(default="")
     group_id: str | int = Field(default=0)
 

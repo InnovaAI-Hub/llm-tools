@@ -1,6 +1,7 @@
 """
 Description: This module contains the validators for the config files.
     At this moment the only validator is validModelUrl and it test that the url is not empty.
+    NOTE: Move validator to config class?
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
@@ -18,3 +19,12 @@ class Validator:
             raise ValueError(f"Validator:validModelUrl| Invalid model url: {url}")
 
         return url
+
+    @staticmethod
+    def valid_config_version(version: str) -> str:
+        if not version or version != "0.0.3":
+            raise ValueError(
+                f"Validator:validConfigVersion| Invalid config version: {version}"
+            )
+
+        return version

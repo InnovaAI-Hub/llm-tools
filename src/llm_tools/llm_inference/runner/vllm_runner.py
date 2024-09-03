@@ -1,5 +1,7 @@
 from typing import override
 
+import torch
+
 from llm_tools.config.config import Config
 from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
@@ -11,13 +13,20 @@ from vllm import LLM, SamplingParams
 class VLLMRunner(AbstractModelRunner):
     def __init__(self, model_config: Config) -> None:
         super().__init__(model_config)
+
         self.params = SamplingParams(
             temperature=self.model_config.temperature,
             top_p=self.model_config.top_p,
             max_tokens=self.model_config.max_new_tokens,
             stop_token_ids=self.model_config.terminators,
         )
-        self.model = LLM(self.model_config.llm_url, dtype="bfloat16")
+
+        self.model = LLM(
+            self.model_config.llm_url,
+            dtype="bfloat16",
+            tensor_parallel_size=torch.cuda.device_count(),
+            max_model_len=self.model_config.max_model_len,
+        )
 
     @override
     def execute_once(self, input: str) -> str:

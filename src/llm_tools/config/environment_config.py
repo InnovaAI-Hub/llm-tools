@@ -11,11 +11,12 @@ Dependencies: pydantic, RunnerType from llm_tools.llm_inference
 
 from pathlib import Path
 from typing import Any
-from pydantic import BaseModel, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 from llm_tools.type.runner_type import RunnerType
 
 
-class EnvironmentConfig(BaseModel):
+class EnvironmentConfig(BaseSettings):
     runner_type: RunnerType = Field(default="hf", frozen=True)
     device_type: str = Field(default="auto", frozen=True)
     backup_path: Path = Field(default=Path("./backups"), frozen=True)

@@ -15,6 +15,7 @@ from typing import Optional, override
 
 import pandas as pd
 import torch
+import logging
 from datasets import Dataset
 from llm_tools.config.config import Config
 from llm_tools.dataset.msg_dataset import AbstractMsgDataset, MsgDatasetItem
@@ -31,17 +32,42 @@ class HfMsgDataset(AbstractMsgDataset):
     ) -> None:
         super().__init__(messages_df, configs)
         self.tokenizer: PreTrainedTokenizer | PreTrainedTokenizerFast = (
-            self.get_tokenizer(configs.llm_model.llm_url)
+            self.get_tokenizer(
+                configs.llm_model.llm_url,
+                pad_token_id=configs.llm_model.pad_token_id,
+                pad_token=configs.llm_model.pad_token,
+            )
         )
         self.dataset = self.format_dataset(messages_df=messages_df)
 
     @staticmethod
-    def get_tokenizer(url: str):
+    def get_tokenizer(
+        url: str,
+        set_pad_token: bool = True,
+        pad_token: Optional[str] = None,
+        pad_token_id: Optional[int] = None,
+    ):
+        logger = logging.getLogger(__name__)
+
         tokenizer = AutoTokenizer.from_pretrained(
             url, padding_side="left", use_fast=True
         )
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+        if set_pad_token and not tokenizer.pad_token:
+            logger.debug(
+                f"HfMsgDataset::get_tokenizer| Set pad token.\
+                    Current pad_token: ({tokenizer.pad_token}, {tokenizer.pad_token_id}),\
+                    Eos_token: ({tokenizer.eos_token}, {tokenizer.eos_token_id})."
+            )
+
+            tokenizer.pad_token = (
+                pad_token if pad_token is not None else tokenizer.eos_token
+            )
+
+            tokenizer.pad_token_id = (
+                pad_token_id if pad_token_id is not None else tokenizer.eos_token_id
+            )
+
         return tokenizer
 
     @staticmethod
@@ -79,15 +105,21 @@ class HfMsgDataset(AbstractMsgDataset):
         df: pd.DataFrame, configs: Config, sys_prompt: str
     ) -> "HfMsgDataset":
         sys_df = pd.DataFrame(
-            {"role": [MsgRoleType.SYSTEM], "content": [sys_prompt], "group_id": [0]}
+            {
+                "role": [MsgRoleType.SYSTEM.value],
+                "content": [sys_prompt],
+                "group_id": [0],
+            }
         )
 
-        df["role"] = df["role"].apply(lambda x: MsgRoleType(x))  # type: ignore
+        # df["role"] = df["role"].apply(lambda x: MsgRoleType(x))  # type: ignore
         formatted_df = pd.DataFrame(columns=df.columns)
         for id, group in df.groupby("group_id"):
             sys_df["group_id"] = id
             group = pd.concat([sys_df, group])
-            formatted_df = pd.concat([formatted_df, group])
+            formatted_df = (
+                group if formatted_df.empty else pd.concat([formatted_df, group])
+            )
 
         return HfMsgDataset(formatted_df, configs)
 
@@ -142,9 +174,19 @@ class HfMsgDataset(AbstractMsgDataset):
         return self.tokenizer.decode(model_output_tokens)
 
     def batch_encode(self, batch):
-        return self.tokenizer(
-            batch["input_sentence"], padding=True, return_tensors="pt"
-        ).to("cuda")
+        # Check that we can remove padding and `to`. And use datacollator for it.
+        model_input = self.tokenizer(batch["input_sentence"], padding=True)
+        labels = self.tokenizer(batch["valid"], padding=True)
+
+        skip_token = -100
+        pad_token = self.tokenizer.pad_token_id
+        labels["input_ids"] = [
+            [label if label != pad_token else skip_token for label in label_seq]
+            for label_seq in labels["input_ids"]
+        ]
+
+        model_input["labels"] = labels["input_ids"]
+        return model_input
 
     def add_valid_data(self, valid_data: list[str]):
         assert len(self.dataset) == len(valid_data)
@@ -152,15 +194,24 @@ class HfMsgDataset(AbstractMsgDataset):
         for i, item in enumerate(valid_data):
             self.dataset[i].valid = item
 
+    # TODO: Refactor this. It's wrong usage.
     def get_hf_dataset(self) -> Dataset:
         sentence = [item.sentence for item in self.dataset]
         groups_id = [item.group_id for item in self.dataset]
         valid = [item.valid for item in self.dataset]
         dataset = Dataset.from_dict(
-            {"input_sentence": sentence, "group_id": groups_id, "valid": valid}
+            {
+                "input_sentence": sentence,
+                "group_id": groups_id,
+                "valid": valid,
+            }
         )
 
-        return dataset.with_transform(self.batch_encode)
+        return dataset.map(
+            self.batch_encode,
+            batched=True,
+            remove_columns=["input_sentence", "valid", "group_id"],
+        )
 
     def __len__(self) -> int:
         return len(self.dataset)
