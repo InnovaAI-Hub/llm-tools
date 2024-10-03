@@ -29,7 +29,6 @@ class MsgDatasetItem(BaseModel):
     valid: str = Field(default="")
     group_id: str | int = Field(default=0)
 
-    device: str = Field(default="cpu")
     tokens: Optional[BatchEncoding] = Field(default=None)
 
     @computed_field
@@ -42,13 +41,14 @@ class AbstractMsgDataset(ABC):
     def __init__(
         self,
         messages_df: pd.DataFrame,
-        configs: Config,
+        configs: Optional[Config] = None,
     ) -> None:
         self.logger = logging.getLogger(__name__)
 
-        self.device = configs.environment.device_type
-        self.configs = configs.dataset
-        self.llm_model_type = configs.llm_model.llm_model_type
+        self.configs = configs.dataset if configs is not None else None
+        self.llm_model_type = (
+            configs.llm_model.llm_model_type if configs is not None else None
+        )
 
     @staticmethod
     @abstractmethod
@@ -73,8 +73,10 @@ class AbstractMsgDataset(ABC):
     def format_dataset(self, messages_df: pd.DataFrame) -> list[MsgDatasetItem]:
         raise NotImplementedError
 
+    @abstractmethod
     def __len__(self) -> int:
-        return len(self.dataset)
+        raise NotImplementedError
 
+    @abstractmethod
     def __getitem__(self, index: int) -> MsgDatasetItem:
-        return self.dataset[index]
+        raise NotImplementedError

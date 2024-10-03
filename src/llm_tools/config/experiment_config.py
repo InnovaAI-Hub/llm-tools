@@ -12,3 +12,4 @@ class ExperimentConfig(BaseSettings):
     llm_model: ModelConfigLLM = Field(ModelConfigLLM(), frozen=True)
     peft_method: PeftMethod = Field(frozen=True)
     training_arguments: TrainingArguments = Field(frozen=True)
+    metric: str = Field(default="exact_match", frozen=True)

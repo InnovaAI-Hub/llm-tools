@@ -1,10 +1,10 @@
-name: llm-inference
+name: llm-tools
 channels:
-  - conda-forge
-  - defaults
-  - nvidia
   - pytorch
+  - nvidia
+  - conda-forge
   - xformers
+  - defaults
 dependencies:
   - python=3.12
   - pydantic>=2.7.3
@@ -14,14 +14,17 @@ dependencies:
   - transformers>=4.41.2
   - pandas>=2.2.2
   - accelerate>=0.31.0
-  - pytorch=2.3.0
-  - pytorch-cuda>=12.1
+  - pytorch=2.4.0
+  - pytorch-cuda>=12.4
   - cuda
   - openai
-  - xformers
+  # - xformers
   - pytest>=8.2.2
+  - peft 
+  - evaluate
   # - flash-attn>=2.5.8
   - pip:
       - ray>=2.31.0
-    # - vllm==0.4.3
+      - vllm
+      - rouge_score
     # - "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"

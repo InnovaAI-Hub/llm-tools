@@ -19,10 +19,15 @@ from pydantic import Field
 
 class ModelConfigLLM(BaseSettings):
     llm_url: UrlType = Field(default="undefined", frozen=True)
+    tokenizer_url: Optional[str] = Field(default=None, frozen=True)
+    peft_path: Optional[str] = Field(default=None, frozen=True)
     llm_model_type: ModelType = Field(default=ModelType.LLAMA3, frozen=True)
+
     token: str = Field(default="undefined", frozen=True)
 
-    max_new_tokens: int = Field(default=512, frozen=True)
+    max_new_tokens: int = Field(default=512, frozen=True)  # for generation
+    max_tokens: Optional[int] = Field(default=None, frozen=True)  # for tokenization
+    max_seq_length: Optional[int] = Field(default=None, frozen=True)
     max_model_len: Optional[int] = Field(default=None, frozen=True)
 
     temperature: float = Field(default=0.0, frozen=True, ge=0.0, le=1.0)

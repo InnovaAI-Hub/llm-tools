@@ -6,6 +6,7 @@ from datasets import Dataset
 from llm_tools.abstract_pipeline import AbstractPipeline
 from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 from llm_tools.llm_inference.runner.runner_getter import RunnerGetter
 
 
@@ -28,5 +29,7 @@ class Pipeline(AbstractPipeline):
         return HfMsgDataset.prepare_to_train(dataset_df, self.config)
 
     @override
-    def _run(self, dataset: Optional[HfMsgDataset | Dataset] = None):
+    def _run(
+        self, dataset: Optional[HfMsgDataset | Dataset] = None
+    ) -> list[ModelOutputItem]:
         return self.runner.execute(dataset)

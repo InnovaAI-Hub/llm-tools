@@ -11,6 +11,8 @@ from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from pydantic import BaseModel, ConfigDict, Field
 
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
+from llm_tools.llm_finetuning.trainer.abstract_trainer import AbstractTrainer
 
 
 class AbstractPipeline(BaseModel):
@@ -19,6 +21,7 @@ class AbstractPipeline(BaseModel):
     config_path: Optional[Path] = Field(default=None)
     config: Optional[Config] = Field(default=None)
     runner: Optional[AbstractModelRunner] = Field(default=None)
+    trainer: Optional[AbstractTrainer] = Field(default=None)
 
     def model_post_init(self, __context) -> None:
         logging.basicConfig(
@@ -57,7 +60,7 @@ class AbstractPipeline(BaseModel):
     def _run(self, dataset: Optional[HfMsgDataset | Dataset] = None):
         raise NotImplementedError
 
-    def run(self, dataset: HfMsgDataset | Dataset):
+    def run(self, dataset: HfMsgDataset | Dataset) -> list[ModelOutputItem]:
         self.logger.info("Pipeline::run| Start application.")
         try:
             if self.config is None:
@@ -66,5 +69,5 @@ class AbstractPipeline(BaseModel):
             return self._run(dataset)
 
         except Exception as error:
-            self.logger.critical("MainApplication::run: %s", error, exc_info=True)
+            self.logger.critical("Pipeline::run: %s", error, exc_info=True)
             return []

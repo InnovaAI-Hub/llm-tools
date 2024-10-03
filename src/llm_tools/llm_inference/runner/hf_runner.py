@@ -1,22 +1,23 @@
 from typing import override
+from typing_extensions import deprecated
 
 import torch
 
-# From hf
-from datasets import Dataset
+from datasets import Dataset  # By Huggingface
 from llm_tools.config.config import Config
 from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
+from peft import PeftModel  # By Huggingface
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    GenerationConfig,
     DataCollatorForLanguageModeling,
-)
-from transformers.tokenization_utils_base import BatchEncoding
+    GenerationConfig,
+)  # By Huggingface
+from transformers.tokenization_utils_base import BatchEncoding  # By Huggingface
 
 
 class HFRunner(AbstractModelRunner):
@@ -24,6 +25,9 @@ class HFRunner(AbstractModelRunner):
         super().__init__(config)
         self.llm_model = self._get_model()
         self.generation_config = self._get_generation_config()
+
+    def __del__(self):
+        torch.cuda.empty_cache()
 
     def _get_generation_config(self) -> GenerationConfig:
         model_conf = self.config.llm_model
@@ -48,6 +52,12 @@ class HFRunner(AbstractModelRunner):
             low_cpu_mem_usage=True,
         )
 
+        if self.config.llm_model.peft_path is not None:
+            self.logger.info("HFRunner::_get_model| Loading peft adapter.")
+            llm_model = PeftModel.from_pretrained(
+                llm_model, self.config.llm_model.peft_path, is_trainable=False
+            )
+
         # For this you need to install optimum.
         # WARNING: This is not supported and not tested yet.
         # llm_model = llm_model.to_bettertransformer()
@@ -63,6 +73,9 @@ class HFRunner(AbstractModelRunner):
             generation_config=self.generation_config,
         )
 
+    @deprecated(
+        "HFRunner::execute_once| This method in refactor, use `execute` instead."
+    )
     @override
     @torch.no_grad()
     def execute_once(self, model_input: str) -> str:
@@ -89,8 +102,27 @@ class HFRunner(AbstractModelRunner):
     @torch.no_grad()
     def execute(self, dataset: HfMsgDataset) -> list[ModelOutputItem]:
         # model_input.tokenize(lambda x: self.tokenizer(x, return_tensors="pt"))
+        """
+        Execute a model on a given dataset.
+
+        Args:
+        - dataset (HfMsgDataset): The dataset to run the model on.
+
+        Returns:
+        - list[ModelOutputItem]: A list of ModelOutputItem objects, each containing the output text and the group id of the input.
+        """
+        ds = dataset.get_hf_dataset()
+
+        all_cols = set(ds.column_names)
+        # TODO: Get this set from model config
+
+        group_ids = ds["group_id"]
+
+        used_cols = {"input_ids", "attention_mask"}
+        ds = ds.remove_columns(list(all_cols - used_cols))
+
         dataloader: DataLoader[Dataset] = DataLoader(
-            dataset.get_hf_dataset(),
+            dataset=ds,
             shuffle=False,
             batch_size=self.config.dataset.batch_size,
             num_workers=self.config.environment.num_workers,
@@ -102,32 +134,31 @@ class HFRunner(AbstractModelRunner):
             ),
         )
 
-        model_output: list[ModelOutputItem] = []
+        model_output_str: list[str] = []
         # For this need flash attention, not needed with torch >= 2.1.1
         # with torch.nn.attention.sdpa_kernel(
         #     backends=torch.nn.attention.SDPBackend.FLASH_ATTENTION
         # ):
         for batch_num, batch_tokens in enumerate(tqdm(dataloader, desc="Run")):
-            # BUG: Need to fix this, we don't need to use `to`, because memory management is handled by dataloader.
+            batch_tokens: BatchEncoding
+            # model_groups: list[int | str] = batch_tokens.data.pop("group_id")
+
             batch_tokens = batch_tokens.to("cuda")
             cnt_tokens: int = batch_tokens["input_ids"][0].shape[0]
             output_tokens = self._generate_tokens(batch_tokens).to("cpu")
             output_strings: list[str] = dataset.batch_decode(output_tokens, cnt_tokens)
 
-            first_index_ds = batch_num * self.config.dataset.batch_size
-            last_index_ds = first_index_ds + self.config.dataset.batch_size
-            model_groups = [x.group_id for x in dataset[first_index_ds:last_index_ds]]
-            model_output.extend(
-                [
-                    ModelOutputItem(group_id=group_id, text=res)
-                    for res, group_id in zip(output_strings, model_groups)
-                ]
-            )
+            model_output_str.extend(output_strings)
+
             torch.save(
                 output_tokens,
                 self.config.environment.backup_path
                 / f"output_tokens_backup(batch - {batch_num}).pt",
             )
 
-        torch.cuda.empty_cache()
+        model_output = [
+            ModelOutputItem(group_id=group_id, text=res)
+            for res, group_id in zip(model_output_str, group_ids)
+        ]
+
         return model_output
