@@ -1,3 +1,26 @@
+"""
+Description:
+    This file defines the VLLMRunner class, which is used for running models with VLLM.
+    Currently, PEFT adapters are not supported. The class can be used with Hugging Face models.
+
+Classes:
+    - VLLMRunner: A class for running VLLM models with configurable sampling parameters and input datasets.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 13.10.2024
+Version: 0.1
+Python Version: 3.10
+Dependencies:
+    - pydantic
+    - vllm
+    - torch
+
+TODO:
+    - After a lot updates of hf dataset, need to check the work of all methods.
+"""
+
 from typing import override
 
 import torch

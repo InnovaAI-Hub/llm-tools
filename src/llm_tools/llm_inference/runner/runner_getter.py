@@ -1,3 +1,14 @@
+"""
+Description:
+    In this file we define the runner getter class.
+    It is used to get the runner based on the runner type.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 13.10.2024
+"""
+
 from llm_tools.config.config import Config
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
 from llm_tools.type.runner_type import RunnerType

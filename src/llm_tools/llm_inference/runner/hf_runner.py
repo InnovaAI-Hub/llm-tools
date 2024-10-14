@@ -1,3 +1,23 @@
+"""
+Description:
+    In this file we define the runner class for Huggingface models.
+    Can be used also for model with peft adapters.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 03.10.2024
+Version: 0.3
+Python Version: 3.12
+Dependencies:
+    - pydantic
+    - transformers
+    - torch
+    - tqdm
+    - peft
+    - datasets
+"""
+
 from typing import override
 from typing_extensions import deprecated
 
@@ -96,8 +116,6 @@ class HFRunner(AbstractModelRunner):
 
         return model_output
 
-    # WARNING: NOT TESTED
-    # This need to refactor. a lot of problems here.
     @override
     @torch.no_grad()
     def execute(self, dataset: HfMsgDataset) -> list[ModelOutputItem]:
@@ -106,10 +124,10 @@ class HFRunner(AbstractModelRunner):
         Execute a model on a given dataset.
 
         Args:
-        - dataset (HfMsgDataset): The dataset to run the model on.
+            dataset (HfMsgDataset): The dataset to run the model on.
 
         Returns:
-        - list[ModelOutputItem]: A list of ModelOutputItem objects, each containing the output text and the group id of the input.
+            list[ModelOutputItem]: A list of ModelOutputItem objects, each containing the output text and the group id of the input.
         """
         ds = dataset.get_hf_dataset()
 

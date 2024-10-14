@@ -1,3 +1,21 @@
+"""
+Description:
+    This file defines the AbstractModelRunner class, an abstract base class for running models
+    with configurable inputs and outputs. It includes abstract methods for single and batch
+    execution, which must be implemented by subclasses.
+
+Classes:
+    - AbstractModelRunner: An abstract base class for model execution with configurable inputs and outputs.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 03.10.2024
+Version: 0.3
+Python Version: 3.12
+Dependencies:
+"""
+
 from abc import ABC, abstractmethod
 import logging
 

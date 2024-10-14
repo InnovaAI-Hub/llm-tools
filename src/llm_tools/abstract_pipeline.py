@@ -1,4 +1,18 @@
-# TODO: Update the logger msg.
+"""
+Description:
+    Abstract base class for pipelines.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 13.10.2024
+Version: 0.1
+Python Version: 3.10
+Dependencies:
+    - pydantic
+    - datasets (hf)
+
+"""
 
 import logging
 from abc import abstractmethod
@@ -37,6 +51,17 @@ class AbstractPipeline(BaseModel):
         raise NotImplementedError
 
     def get_config(self) -> Config:
+        """
+        Gets the config for this pipeline.
+        If the config is already set, it will be returned.
+        Otherwise, if a config path is set, it will be used to load the config from a yaml file.
+
+        Raises:
+            RuntimeError: If no config path is set.
+
+        Returns:
+            Config: The config for this pipeline.
+        """
         if self.config is not None:
             return self.config
 
@@ -47,20 +72,46 @@ class AbstractPipeline(BaseModel):
         raise RuntimeError("Pipeline::get_config| Config is not set")
 
     @abstractmethod
-    def _get_dataset(self, dataset_path: Path) -> HfMsgDataset | Dataset:
+    def _get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
         raise NotImplementedError
 
-    def get_dataset(self, dataset_path: Path) -> HfMsgDataset | Dataset:
+    def get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
+        """
+        Gets the dataset for this pipeline.
+
+        Args:
+            dataset_path (Path): The path to the dataset.
+
+        Raises:
+            RuntimeError: If the config is not set.
+
+        Returns:
+            HfMsgDataset | Dataset:
+        """
         if self.config is None:
             raise RuntimeError("Pipeline::get_dataset| Config is not set")
 
         return self._get_dataset(dataset_path)
 
     @abstractmethod
-    def _run(self, dataset: Optional[HfMsgDataset | Dataset] = None):
+    def _run(
+        self, dataset: Optional[HfMsgDataset | Dataset] = None
+    ) -> list[ModelOutputItem]:
         raise NotImplementedError
 
     def run(self, dataset: HfMsgDataset | Dataset) -> list[ModelOutputItem]:
+        """
+        Runs the pipeline on the dataset.
+
+        Args:
+            dataset (HfMsgDataset | Dataset): The dataset to run the pipeline on.
+
+        Raises:
+            RuntimeError: If the config is not set.
+
+        Returns:
+            list[ModelOutputItem]: List with model output items.
+        """
         self.logger.info("Pipeline::run| Start application.")
         try:
             if self.config is None:

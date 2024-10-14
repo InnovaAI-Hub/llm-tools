@@ -1,14 +1,18 @@
 """
-Description: Module for formatting messages. Maybe need switch to Jinja or similar.
-WARNING: This class is not fully supported yet, not tested and should not be used.
+Description:
+    Module for formatting messages. Maybe need switch to Jinja or similar.
+
+    WARNING: This class is not fully supported yet, not tested and should not be used.
     It class will be refactored. And it will be use only for llama.cpp
+
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
 Date Modified: 14.06.2024
 Version: 0.1
 Python Version: 3.10
-Dependencies: pandas
+Dependencies:
+    - pandas
 """
 
 import logging

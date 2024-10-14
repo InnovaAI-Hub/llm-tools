@@ -1,13 +1,24 @@
 """
-Description: In this file we define the dataset class, class for using items in batch, and item class.
+Description:
+    In this file we define the dataset class, class for using items in batch, and item class.
     Need a lot refactoring.
+
+Classes:
+    - HfMsgDataset: The dataset class, used for tokenization, formatting, preparing data for training.
+
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
 Date Modified: 03.10.2024
 Version: 0.3
 Python Version: 3.12
-Dependencies: pydantic, torch, transformers, pandas
+Dependencies:
+    - pydantic
+    - torch
+    - transformers
+    - pandas
+    - datasets
+
 """
 
 from pathlib import Path
@@ -217,6 +228,12 @@ class HfMsgDataset(AbstractMsgDataset):
             formatted = [df.astype(str) for df in formatted]
             for i, formatted_group in enumerate(formatted):
                 formatted_group.loc[:, "group_id"] = f"{group_id}.{i}"
+
+            group_answer.loc[:, "group_id"] = (
+                group_answer["group_id"].astype(str)
+                + "."
+                + pd.RangeIndex(stop=len(formatted)).astype(str)
+            )
 
             if group_answer.shape[0] != len(formatted):
                 logger.error(

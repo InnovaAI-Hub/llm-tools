@@ -1,13 +1,19 @@
 """
-Description: In this file we define the dataset class, class for using items in batch, and item class.
+Description:
+    In this file we define the dataset class, class for using items in batch, and item class.
     Need a lot refactoring.
+
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
 Date Modified: 14.06.2024
 Version: 0.1
 Python Version: 3.10
-Dependencies: pydantic, torch, transformers, pandas
+Dependencies:
+    - pydantic
+    - torch
+    - transformers
+    - pandas
 """
 
 import logging

@@ -1,3 +1,27 @@
+"""
+Module for training Hugging Face models using the UnslothTrainer class.
+
+Description:
+    This module provides a class, UnslothTrainer, for fine-tuning Hugging Face models.
+    It handles loading the dataset, creating the model, and training the model.
+
+Classes:
+    UnslothTrainer: A class for fine-tuning Hugging Face models.
+
+Author: Artem Durynin
+E-mail: artem.durynin@raftds.com, mail@durynin1.ru
+Date Created: 10.09.24
+Date Modified: 11.10.24
+Version: 0.1
+Python Version: 3.10
+Dependencies:
+    - Hugging Face: Transformers, evaluate, peft, trl;
+    - PyTorch
+    - pandas
+    - numpy
+    - unsloth
+"""
+
 import logging
 
 import evaluate

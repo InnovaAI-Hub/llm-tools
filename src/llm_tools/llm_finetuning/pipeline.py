@@ -1,3 +1,24 @@
+"""
+Description:
+    This file defines the TrainerPipeline class, which loads and prepares datasets
+    for language model training by reading a CSV and processing it with Hugging Face's tools.
+
+Classes:
+    - TrainerPipeline: Extends AbstractPipeline to fetch and prepare datasets for training.
+
+Author: Artem Durynin
+E-mail: artem.d@raftds.com, mail@durynin1.ru
+Date Created: 13.06.2024
+Date Modified: 03.10.2024
+Version: 0.3
+Python Version: 3.12
+Dependencies:
+    - pandas
+    - datasets
+
+WARNING: This class is not fully supported yet, not tested and should not be used.
+"""
+
 from pathlib import Path
 from typing import Optional, override
 
