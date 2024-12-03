@@ -22,7 +22,7 @@ def main():
     ds = ds.loc[ds["role"] != "assistant"]
 
     # Check that there are no assistant messages
-    print(f"Roles in ds:{ds["role"].unique()}")
+    print(f"Roles in ds:{ds['role'].unique()}")
     assert "assistant" not in ds["role"].to_list()
 
     # Create dataset and run inference
