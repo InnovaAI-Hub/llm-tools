@@ -9,26 +9,36 @@ Python Version: 3.10
 Dependencies: pydantic, llm_tools.llm_inference
 """
 
+from pathlib import Path
 from typing import Optional
+
+from pydantic import Field
 from pydantic_settings import BaseSettings
+
+from llm_tools.type.model_dtype import ModelDType
 from llm_tools.type.model_type import ModelType
 from llm_tools.type.url_type import UrlType
-from llm_tools.type.model_dtype import ModelDType
-from pydantic import Field
 
 
 class ModelConfigLLM(BaseSettings):
     llm_url: UrlType = Field(default="undefined", frozen=True)
-    tokenizer_url: Optional[str] = Field(default=None, frozen=True)
-    peft_path: Optional[str] = Field(default=None, frozen=True)
+    tokenizer_url: Optional[str] = Field(
+        default=None, frozen=True
+    )  # TODO: Change to UrlType
+    peft_path: Optional[Path] = Field(default=None, frozen=True)
     llm_model_type: ModelType = Field(default=ModelType.LLAMA3, frozen=True)
+    resize_embed_layer: Optional[int] = Field(default=None, frozen=True)
+    save_merged_model: bool = Field(default=False, frozen=True)
 
     token: str = Field(default="undefined", frozen=True)
 
     max_new_tokens: int = Field(default=512, frozen=True)  # for generation
-    max_tokens: Optional[int] = Field(default=None, frozen=True)  # for tokenization
-    max_seq_length: Optional[int] = Field(default=None, frozen=True)
-    max_model_len: Optional[int] = Field(default=None, frozen=True)
+    max_seq_length: Optional[int] = Field(
+        default=None, frozen=True
+    )  # It used only in tokenize
+    max_model_len: Optional[int] = Field(
+        default=None, frozen=True
+    )  # It used for global tokenizer max limit
 
     temperature: float = Field(default=0.0, frozen=True, ge=0.0, le=1.0)
     top_p: float = Field(default=0.5, frozen=True, ge=0.0, le=1.0)

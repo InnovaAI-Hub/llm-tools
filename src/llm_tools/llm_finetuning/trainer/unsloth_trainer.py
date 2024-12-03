@@ -11,7 +11,7 @@ Classes:
 Author: Artem Durynin
 E-mail: artem.durynin@raftds.com, mail@durynin1.ru
 Date Created: 10.09.24
-Date Modified: 11.10.24
+Date Modified: 03.12.24
 Version: 0.1
 Python Version: 3.10
 Dependencies:
@@ -23,47 +23,46 @@ Dependencies:
 """
 
 import logging
+import os
+
+# from typing import override # Only in python 12.
 
 import evaluate
 import numpy as np
-import pandas as pd
 import torch
-from datasets import Dataset
 from llm_tools.config.experiment_config import ExperimentConfig
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from transformers import (
     PreTrainedTokenizerFast,
     DataCollatorForLanguageModeling,
 )
+from transformers.trainer_utils import EvalPrediction
 from trl import SFTTrainer, SFTConfig
 from unsloth import FastLanguageModel
+from unsloth_zoo import tokenizer_utils
 from pathlib import Path
 
+from llm_tools.llm_finetuning.trainer.abstract_trainer import (
+    AbstractTrainer,
+    PreparedDataset,
+)
 
-class UnslothTrainer:
+
+class UnslothTrainer(AbstractTrainer):
     # NOTE: In this moment we use default dataset and after it we convert it needed format.
     #       Maybe need to change this?
     def __init__(self, exp_config: ExperimentConfig, ds_path: Path) -> None:
+        super().__init__()
+
         self.exp_config: ExperimentConfig = exp_config
         self.logger: logging.Logger = logging.getLogger(__name__)
         self.model, self.tokenizer = self._get_model()
-        self.dataset: dict[str, Dataset] = self.get_dataset(ds_path, self.tokenizer)
+        self.dataset: PreparedDataset = self.get_dataset(ds_path, self.tokenizer)
         self.evaluator: evaluate.EvaluationModule = evaluate.load(
             self.exp_config.metric
         )
 
-    @staticmethod
-    def get_dataset(dataset_path: Path, tokenizer) -> dict[str, Dataset]:
-        is_parquet = dataset_path.suffix == ".parquet"
-        messages_df = (
-            pd.read_parquet(dataset_path) if is_parquet else pd.read_csv(dataset_path)
-        )
-        ds = HfMsgDataset.prepare_to_train(
-            messages_df, tokenizer=tokenizer, test_size=0.0025
-        )
-        return {"train": ds[0], "test": ds[1]}
-
-    def evaluation(self, predict_labels):
+    # @override
+    def evaluate(self, predict_labels: EvalPrediction):
         """
         Compute the evaluation metric for the given `predict_labels`.
 
@@ -75,7 +74,29 @@ class UnslothTrainer:
             A dictionary containing the evaluation metric and the metric value.
         """
         # TODO: Need to add check that pad_token_id is not equal `none`.
-        logits, labels = predict_labels
+        logits = predict_labels.predictions
+        labels = predict_labels.label_ids
+        self.logger.debug(
+            f"UnslothTrainer::evaluation| Predict labels type: {type(predict_labels)}\n"
+            f"UnslothTrainer::evaluation| Got logits and labels, types: {type(logits)}, {type(labels)}."
+        )
+
+        # TODO: Remove or improve this check.
+        if type(logits) is tuple:
+            self.logger.debug(
+                f"UnslothTrainer::evaluation| Logits is tuple:\n* Size:{len(logits)},\n* Items:{logits}"
+            )
+            assert (
+                len(logits) != 0
+            ), "UnslothTrainer::evaluation| Logits is empty tuple."
+
+        if type(labels) is tuple:
+            self.logger.debug(
+                f"UnslothTrainer::evaluation| Labels is tuple:\n* Size:{len(labels)},\n* Items:{labels}"
+            )
+            assert (
+                len(labels) != 0
+            ), "UnslothTrainer::evaluation| Labels is empty tuple."
 
         if self.tokenizer.pad_token_id is None:
             raise ValueError(
@@ -105,6 +126,8 @@ class UnslothTrainer:
         Returns:
             tuple[FastLanguageModel, PreTrainedTokenizerFast]: The method returns a tuple with the model and the tokenizer.
         """
+        os.environ["UNSLOTH_RETURN_LOGITS"] = "1"
+
         model_conf = self.exp_config.llm_model
         train_conf = self.exp_config.training_arguments
         lora_conf = self.exp_config.peft_method.lora_conf
@@ -120,6 +143,24 @@ class UnslothTrainer:
 
         model: FastLanguageModel = model_tokenizer[0]
         tokenizer: PreTrainedTokenizerFast = model_tokenizer[1]
+
+        if self.exp_config.additional_tokens is not None:
+            new_tokens = [
+                token.token_name for token in self.exp_config.additional_tokens
+            ]
+
+            tokenizer_utils.add_new_tokens(
+                model,
+                tokenizer,
+                new_tokens=new_tokens,
+                method="mean",
+                interpolation=0.5,
+            )
+
+            self.logger.info(
+                "UnslothTrainer::_get_model| Added new tokens to the tokenizer, current length: %d",
+                len(tokenizer),
+            )
 
         self.logger.debug("Model:%s", model)
 
@@ -154,12 +195,11 @@ class UnslothTrainer:
         trainer = SFTTrainer(
             model=self.model,
             args=sft_conf,
-            tokenizer=self.tokenizer,
             packing=False,
             dataset_text_field="input_sentences",
-            train_dataset=self.dataset["train"].shuffle(13),
-            eval_dataset=self.dataset["test"].shuffle(13),
-            compute_metrics=self.evaluation,
+            train_dataset=self.dataset.train.shuffle(13),
+            eval_dataset=self.dataset.test.shuffle(13),
+            compute_metrics=self.evaluate,
             data_collator=DataCollatorForLanguageModeling(
                 tokenizer=self.tokenizer, mlm=False
             ),
@@ -170,3 +210,12 @@ class UnslothTrainer:
         output_path = self.exp_config.save_to / self.exp_config.experiment_name
         output_path.mkdir(exist_ok=True, parents=True)
         trainer.save_model(output_path.as_posix())
+
+        if self.exp_config.save_merged:
+            merged_dir = output_path / "merged_model"
+            merged_dir.mkdir(exist_ok=True, parents=True)
+            merged_model = trainer.model.merge_and_unload(
+                progressbar=True, safe_merge=True
+            )
+            merged_model.save_pretrained(merged_dir.as_posix())
+            self.tokenizer.save_pretrained(merged_dir.as_posix())

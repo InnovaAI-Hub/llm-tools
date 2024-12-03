@@ -1,26 +1,3 @@
-"""
-Module for training Hugging Face models using the HFTrainer class.
-
-Description:
-    This module provides a class, HFTrainer, for fine-tuning Hugging Face models.
-    It handles loading the dataset, creating the model, and training the model.
-
-Classes:
-    HFTrainer: A class for fine-tuning Hugging Face models.
-
-Author: Artem Durynin
-E-mail: artem.durynin@raftds.com, mail@durynin1.ru
-Date Created: 10.09.24
-Date Modified: 11.10.24
-Version: 0.1
-Python Version: 3.10
-Dependencies:
-    - Hugging Face: Transformers, evaluate, peft;
-    - PyTorch
-    - pandas
-    - numpy
-"""
-
 import logging
 from pathlib import Path
 # from typing import override
@@ -30,40 +7,53 @@ import numpy as np
 import torch
 from llm_tools.config.experiment_config import ExperimentConfig
 from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
-from llm_tools.llm_finetuning.trainer.abstract_trainer import AbstractTrainer
-from peft.config import PeftConfig
+from llm_tools.llm_finetuning.trainer.abstract_trainer import (
+    AbstractTrainer,
+    PreparedDataset,
+)
 from peft.mapping import get_peft_model
 from peft.mixed_model import PeftMixedModel
 from peft.peft_model import PeftModel
 from transformers import (
     AutoModelForCausalLM,
     DataCollatorForLanguageModeling,
-    Trainer,
 )
+from trl import SFTConfig, SFTTrainer
 
 
-# WARNING: Not use this class. Need to refactor this.
-class HFTrainer(AbstractTrainer):
+class HFSFTTrainer(AbstractTrainer):
     # NOTE: In this moment we use default dataset and after it we convert it needed format.
     #       Maybe need to change this?
     def __init__(self, exp_config: ExperimentConfig, ds_path: Path) -> None:
         super().__init__()
 
-        self.exp_config = exp_config
-        self.logger = logging.getLogger(__name__)
-        self.model = self._get_model(exp_config.peft_method.lora_conf)
+        self.exp_config: ExperimentConfig = exp_config
+        self.logger: logging.Logger = logging.getLogger(__name__)
+        self.model = self._get_model()
         self.tokenizer = HfMsgDataset.get_tokenizer(self.exp_config.llm_model.llm_url)
-        self.dataset = self.get_dataset(ds_path, self.tokenizer)
-        self.evaluator = evaluate.load(self.exp_config.metric)
+        self.dataset: PreparedDataset = self.get_dataset(ds_path, self.tokenizer)
+        self.evaluator: evaluate.EvaluationModule = evaluate.load(
+            self.exp_config.metric
+        )
 
     #    @override
     def evaluate(self, predict_labels):
-        logits, labels = predict_labels
+        """
+        Compute the evaluation metric for the given `predict_labels`.
+
+        Args:
+            predict_labels: A tuple of (logits, labels) where logits is the prediction
+                output from the model and labels is the original labels.
+
+        Returns:
+            A dictionary containing the evaluation metric and the metric value.
+        """
         # TODO: Need to add check that pad_token_id is not equal `none`.
+        logits, labels = predict_labels
 
         if self.tokenizer.pad_token_id is None:
             raise ValueError(
-                "HFTrainer::evaluation| The tokenizer does not have a pad token id."
+                "UnslothTrainer::evaluation| The tokenizer does not have a pad token id."
             )
 
         skip_token = -100
@@ -79,42 +69,48 @@ class HFTrainer(AbstractTrainer):
             predictions=decoded_predictions, references=decoded_labels
         )
 
-    # TODO: Rewrite this to static?
-    def _get_model(self, peft_config: PeftConfig) -> PeftModel | PeftMixedModel:
+    def _get_model(self) -> PeftModel | PeftMixedModel:
         model_conf = self.exp_config.llm_model
         train_conf = self.exp_config.training_arguments
+        peft_conf = self.exp_config.peft_method.lora_conf
 
         model = AutoModelForCausalLM.from_pretrained(
             model_conf.llm_url,
             # TODO: add config support
-            torch_dtype=torch.float16 if train_conf.fp16 else torch.bfloat16,
+            torch_dtype=torch.float16
+            if train_conf.fp16
+            else torch.bfloat16,  # Not good...
             device_map="auto",
             low_cpu_mem_usage=True,
         )
 
         self.logger.debug("Model:%s", model)
 
-        return get_peft_model(model, peft_config)
+        return get_peft_model(model, peft_conf)
 
-    def log_model_parameters(self):
-        trainable_params, all_param = self.model.get_nb_trainable_parameters()
-        self.logger.info(
-            f"log_model_parameters:: Trainable params: {trainable_params} | All parameters: {all_param}"
-        )
+    def train(self) -> None:
+        """
+        Start training model.
+        Model will be saved in `exp_config.save_to / exp_config.experiment_name`.
+        """
 
-    def train(self):
         self.logger.info("train:: Start training")
-        self.log_model_parameters()
 
-        trainer = Trainer(
-            self.model,
-            self.exp_config.training_arguments,
-            train_dataset=self.dataset["train"].shuffle(13),
-            eval_dataset=self.dataset["test"].shuffle(13),
+        sft_conf = SFTConfig(**self.exp_config.training_arguments.to_dict())
+
+        trainer = SFTTrainer(
+            model=self.model,
+            args=sft_conf,
+            tokenizer=self.tokenizer,
+            packing=False,
+            dataset_text_field="input_sentences",
+            train_dataset=self.dataset.train.shuffle(13),
+            eval_dataset=self.dataset.test.shuffle(13),
             compute_metrics=self.evaluate,
             data_collator=DataCollatorForLanguageModeling(
                 tokenizer=self.tokenizer, mlm=False
             ),
+            max_seq_length=self.exp_config.llm_model.max_seq_length,
         )
 
         trainer.train()

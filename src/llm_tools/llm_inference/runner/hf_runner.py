@@ -18,7 +18,7 @@ Dependencies:
     - datasets
 """
 
-from typing import override
+# from typing import override
 from typing_extensions import deprecated
 
 import torch
@@ -45,6 +45,7 @@ class HFRunner(AbstractModelRunner):
         super().__init__(config)
         self.llm_model = self._get_model()
         self.generation_config = self._get_generation_config()
+        # TODO: Where will be better to init tokenizer?
 
     def __del__(self):
         torch.cuda.empty_cache()
@@ -57,10 +58,12 @@ class HFRunner(AbstractModelRunner):
             do_sample=model_conf.do_sample,
             temperature=model_conf.temperature,
             top_p=model_conf.top_p,
-            pad_token_id=model_conf.pad_token_id,
+            pad_token_id=model_conf.pad_token_id,  # TODO: It's problem. It's not the same as tokenizer.pad_token_id
         )
 
     def _get_model(self):  # -> Callable[..., Any]:
+        torch.set_float32_matmul_precision("high")
+
         llm_model = AutoModelForCausalLM.from_pretrained(
             self.config.llm_model.llm_url,
             device_map="auto",
@@ -73,18 +76,31 @@ class HFRunner(AbstractModelRunner):
         )
 
         if self.config.llm_model.peft_path is not None:
-            self.logger.info("HFRunner::_get_model| Loading peft adapter.")
-            llm_model = PeftModel.from_pretrained(
-                llm_model, self.config.llm_model.peft_path, is_trainable=False
-            )
+            if self.config.llm_model.resize_embed_layer is not None:
+                llm_model.resize_token_embeddings(
+                    self.config.llm_model.resize_embed_layer
+                )
 
-        # For this you need to install optimum.
+            self.logger.info("HFRunner::_get_model| Loading peft adapter.")
+            llm_model: PeftModel = PeftModel.from_pretrained(
+                llm_model,
+                self.config.llm_model.peft_path,
+                is_trainable=False,
+                device="cuda",
+                dtype=torch.bfloat16,
+                low_cpu_mem_usage=True,
+            )
+            self.logger.info("HFRunner::_get_model| Adapter loaded.")
+
+            return llm_model.merge_and_unload(progressbar=True, safe_merge=True)
+
+        # For this you need to install `optimum`.
         # WARNING: This is not supported and not tested yet.
         # llm_model = llm_model.to_bettertransformer()
-        torch.set_float32_matmul_precision("high")
         return torch.compile(llm_model).eval()
 
     def _get_tokenizer(self):
+        # TODO: We actually have variable with tokenaizer_pth. We need also to check this.
         return AutoTokenizer.from_pretrained(self.config.llm_model.llm_url)
 
     def _generate_tokens(self, model_input_tokens: BatchEncoding) -> torch.Tensor:
@@ -96,7 +112,7 @@ class HFRunner(AbstractModelRunner):
     @deprecated(
         "HFRunner::execute_once| This method in refactor, use `execute` instead."
     )
-    @override
+    # @override
     @torch.no_grad()
     def execute_once(self, model_input: str) -> str:
         tokenizer = self._get_tokenizer()
@@ -116,7 +132,7 @@ class HFRunner(AbstractModelRunner):
 
         return model_output
 
-    @override
+    # @override
     @torch.no_grad()
     def execute(self, dataset: HfMsgDataset) -> list[ModelOutputItem]:
         # model_input.tokenize(lambda x: self.tokenizer(x, return_tensors="pt"))
@@ -163,6 +179,11 @@ class HFRunner(AbstractModelRunner):
 
             batch_tokens = batch_tokens.to("cuda")
             cnt_tokens: int = batch_tokens["input_ids"][0].shape[0]
+
+            self.logger.debug(
+                f"HFRunner::execute| Start model execution. Batch number: {batch_num}, cnt_tokens: {cnt_tokens}",
+            )
+
             output_tokens = self._generate_tokens(batch_tokens).to("cpu")
             output_strings: list[str] = dataset.batch_decode(output_tokens, cnt_tokens)
 

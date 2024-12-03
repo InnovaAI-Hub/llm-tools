@@ -22,7 +22,7 @@ Dependencies:
 """
 
 from pathlib import Path
-from typing import Optional, override
+from typing import Optional  # , override
 from transformers.tokenization_utils_base import BatchEncoding
 from typing_extensions import deprecated
 
@@ -99,11 +99,16 @@ class HfMsgDataset(AbstractMsgDataset):
             else llm_model_conf.tokenizer_url
         )
 
+        self.logger.debug(
+            "HfMsgDataset::init_tokenizer| "
+            f"Initializing tokenizer from {tokenizer_path}."
+        )
+
         return self.get_tokenizer(
             tokenizer_path,
             pad_token_id=llm_model_conf.pad_token_id,
             pad_token=llm_model_conf.pad_token,
-            max_length=llm_model_conf.max_tokens,
+            max_length=llm_model_conf.max_model_len,
         )
 
     @staticmethod
@@ -146,6 +151,12 @@ class HfMsgDataset(AbstractMsgDataset):
             tokenizer.pad_token_id = (
                 pad_token_id if pad_token_id is not None else tokenizer.eos_token_id
             )
+
+        logger.debug(
+            "HfMsgDataset::get_tokenizer| "
+            f"Current pad_token: ({tokenizer.pad_token}, {tokenizer.pad_token_id}),"
+            f"Eos_token: ({tokenizer.eos_token}, {tokenizer.eos_token_id})."
+        )
 
         return tokenizer
 
@@ -364,7 +375,7 @@ class HfMsgDataset(AbstractMsgDataset):
 
         return MsgDatasetItem(sentence=prompt, group_id=group_id)
 
-    @override
+    #    @override
     def format_dataset(self, messages_df: pd.DataFrame) -> list[MsgDatasetItem]:
         # Apply transformations.
         # NOTE: Maybe need to remove it?
@@ -381,7 +392,9 @@ class HfMsgDataset(AbstractMsgDataset):
         ]
 
     def tokenize(self, item: MsgDatasetItem) -> None:
-        item.tokens = self.tokenizer(item.sentence, return_tensors="pt")
+        item.tokens = self.tokenizer(
+            item.sentence, return_tensors="pt", max_length=self.max_seq_len
+        )
 
     def batch_decode(
         self,
@@ -433,7 +446,7 @@ class HfMsgDataset(AbstractMsgDataset):
             padding=True,
             truncation=True,
             # Turn off, because sometimes it adds on more bos_token. We already have it  in `input_sequence`.
-            max_length=self.tokenizer.model_max_length,
+            max_length=self.max_seq_len,
             add_special_tokens=False,
         )
 
@@ -441,7 +454,7 @@ class HfMsgDataset(AbstractMsgDataset):
             batch["target_sequence"],
             padding=True,
             truncation=True,
-            max_length=self.tokenizer.model_max_length,
+            max_length=self.max_seq_len,
             add_special_tokens=False,
         )
 

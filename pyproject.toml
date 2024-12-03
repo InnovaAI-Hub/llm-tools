@@ -6,20 +6,26 @@ authors = [
     { name = "Artem Durynin", email = "artem5542@gmail.com" }
 ]
 dependencies = [
+    "pillow>=9.4.0",
+    "pandas>=2.2.3",
+    "torch>=2.5.0",  # Align with pytorch>=2.5.*
+    "torchvision==0.20.1",
     "pydantic>=2.7.3",
     "pydantic-settings>=2.3.1",
     "pre-commit>=3.7.1",
     "ruff>=0.4.8",
     "transformers>=4.41.2",
-    "pandas>=2.2.2",
     "accelerate>=0.31.0",
-    "torch>=2.3.0",
+    "openai>=1.5.2",
+    "pyarrow>=16.1.0",
     "pytest>=8.2.2",
-    "ipython>=8.25.0",
-    "openai"
+    "peft>=0.13.2",
+    "evaluate>=0.4.1",
+    "rouge_score"
 ]
+
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">=3.11"
 
 [build-system]
 requires = ["hatchling"]
@@ -39,3 +45,8 @@ packages = ["src/llm_tools"]
 name = "torch"
 url = "https://download.pytorch.org/whl/cpu"
 type = "index"
+
+[tool.hatch.dependencies.overrides]
+# Add Git dependencies as overrides for `pip` installations
+unsloth = {url = "git+https://github.com/unslothai/unsloth.git"}
+unsloth_zoo = {url = "git+https://github.com/unslothai/unsloth-zoo.git"}

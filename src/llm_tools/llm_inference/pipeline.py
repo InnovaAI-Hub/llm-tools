@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, override
+from typing import Optional  # ,  override
 
 import pandas as pd
 from datasets import Dataset
@@ -11,7 +11,7 @@ from llm_tools.llm_inference.runner.runner_getter import RunnerGetter
 
 
 class Pipeline(AbstractPipeline):
-    @override
+    #    @override
     def _additional_setup(self) -> None:
         """
         Setup the pipeline by initializing the model runner based on the configuration.
@@ -27,7 +27,7 @@ class Pipeline(AbstractPipeline):
             self.config.environment.runner_type, self.config
         )
 
-    @override
+    #    @override
     def _get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
         """
         Get the dataset from the dataset file and split it to train and test sets.
@@ -61,7 +61,7 @@ class Pipeline(AbstractPipeline):
                 f"Pipeline::_get_dataset| Error while read or parse dataset: {e}"
             )
 
-    @override
+    #    @override
     def _run(
         self, dataset: Optional[HfMsgDataset | Dataset] = None
     ) -> list[ModelOutputItem]:

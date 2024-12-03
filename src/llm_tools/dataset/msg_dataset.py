@@ -52,6 +52,9 @@ class AbstractMsgDataset(ABC):
         self.logger = logging.getLogger(__name__)
 
         self.configs = configs.dataset if configs is not None else None
+        self.max_seq_len = (
+            configs.llm_model.max_seq_length if configs is not None else None
+        )
         self.llm_model_type = (
             configs.llm_model.llm_model_type if configs is not None else None
         )

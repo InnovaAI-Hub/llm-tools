@@ -9,7 +9,7 @@ Classes:
 Author: Artem Durynin
 E-mail: artem.d@raftds.com, mail@durynin1.ru
 Date Created: 13.06.2024
-Date Modified: 13.10.2024
+Date Modified: 3.12.2024
 Version: 0.1
 Python Version: 3.10
 Dependencies:
@@ -21,7 +21,7 @@ TODO:
     - After a lot updates of hf dataset, need to check the work of all methods.
 """
 
-from typing import override
+# from typing import override
 
 import torch
 
@@ -51,7 +51,7 @@ class VLLMRunner(AbstractModelRunner):
             max_model_len=self.model_config.max_model_len,
         )
 
-    @override
+    #    @override
     def execute_once(self, input: str) -> str:
         model_output = self.model.generate(
             input, sampling_params=self.params, use_tqdm=True
@@ -62,24 +62,23 @@ class VLLMRunner(AbstractModelRunner):
 
         return model_output[0].outputs[0].text
 
-    @override
-    def execute(self, input: HfMsgDataset) -> list[ModelOutputItem]:
-        # Use or not batches and dataloader?
-
+    #    @override
+    def execute(self, input_ds: HfMsgDataset) -> list[ModelOutputItem]:
         # Try with one batch.
-        batch_list = [item for item in input]
+        # batch_list = [item for item in input_ds]
+        self.model.set_tokenizer(
+            input_ds.tokenizer
+        )  # TODO: Why we set tokenizer here? Maybe move it to __init__.
 
         model_output_tmp = self.model.generate(
-            prompts=[x.sentence for x in batch_list],
+            prompts=[x.sentence for x in input_ds],
             sampling_params=self.params,
             use_tqdm=True,
         )
 
         model_output: list[ModelOutputItem] = [
             ModelOutputItem(group_id, item.outputs[0].text)
-            for item, group_id in zip(
-                model_output_tmp, [x.group_id for x in batch_list]
-            )
+            for item, group_id in zip(model_output_tmp, [x.group_id for x in input_ds])
         ]
 
         return model_output

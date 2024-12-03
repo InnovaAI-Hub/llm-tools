@@ -13,11 +13,42 @@ Dependencies:
     - pydantic
 """
 
-from abc import abstractmethod
-from pydantic import BaseModel
+from abc import ABC, abstractmethod
+from pathlib import Path
+
+import pandas as pd
+from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
+
+from datasets import Dataset
 
 
-class AbstractTrainer(BaseModel):
+@dataclass(slots=True, config=ConfigDict(arbitrary_types_allowed=True))
+class PreparedDataset:
+    train: Dataset
+    test: Dataset
+
+
+class AbstractTrainer(ABC):
     @abstractmethod
     def train(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def evaluate(self, predict_labels):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_dataset(dataset_path: Path, tokenizer) -> PreparedDataset:
+        is_parquet = dataset_path.suffix == ".parquet"
+
+        messages_df = (
+            pd.read_parquet(dataset_path) if is_parquet else pd.read_csv(dataset_path)
+        )
+
+        ds = HfMsgDataset.prepare_to_train(
+            messages_df, tokenizer=tokenizer, test_size=0.1
+        )
+
+        return PreparedDataset(train=ds[0], test=ds[1])
