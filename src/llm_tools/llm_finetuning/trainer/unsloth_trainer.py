@@ -24,27 +24,27 @@ Dependencies:
 
 import logging
 import os
-
-# from typing import override # Only in python 12.
+from pathlib import Path
+from typing import override  # Only in python 12.
 
 import evaluate
 import numpy as np
 import torch
-from llm_tools.config.experiment_config import ExperimentConfig
-from transformers import (
-    PreTrainedTokenizerFast,
-    DataCollatorForLanguageModeling,
-)
+from transformers.data.data_collator import DataCollatorForLanguageModeling
+from transformers.tokenization_utils_fast import PreTrainedTokenizerFast
 from transformers.trainer_utils import EvalPrediction
-from trl import SFTTrainer, SFTConfig
+from trl import SFTConfig, SFTTrainer
 from unsloth import FastLanguageModel
 from unsloth_zoo import tokenizer_utils
-from pathlib import Path
 
+from llm_tools.auto_tokenizer_processor.tokenizer_wrapper import TokenizerWrapper
+from llm_tools.config.experiment_config import ExperimentConfig
 from llm_tools.llm_finetuning.trainer.abstract_trainer import (
     AbstractTrainer,
     PreparedDataset,
 )
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class UnslothTrainer(AbstractTrainer):
@@ -54,14 +54,23 @@ class UnslothTrainer(AbstractTrainer):
         super().__init__()
 
         self.exp_config: ExperimentConfig = exp_config
-        self.logger: logging.Logger = logging.getLogger(__name__)
-        self.model, self.tokenizer = self._get_model()
-        self.dataset: PreparedDataset = self.get_dataset(ds_path, self.tokenizer)
+        self.model, tmp_tokenizer = self._get_model()
+
+        self.tokenizer = TokenizerWrapper(exp_config.llm_model, tmp_tokenizer)
+
+        self.dataset: PreparedDataset = self.get_dataset(
+            tokenizer=self.tokenizer,
+            dataset_path=ds_path,
+            config=self.exp_config.dataset_config,
+            eval_path=exp_config.eval_path,
+            test_size=self.exp_config.test_size,
+        )
+
         self.evaluator: evaluate.EvaluationModule = evaluate.load(
             self.exp_config.metric
         )
 
-    # @override
+    @override
     def evaluate(self, predict_labels: EvalPrediction):
         """
         Compute the evaluation metric for the given `predict_labels`.
@@ -76,14 +85,14 @@ class UnslothTrainer(AbstractTrainer):
         # TODO: Need to add check that pad_token_id is not equal `none`.
         logits = predict_labels.predictions
         labels = predict_labels.label_ids
-        self.logger.debug(
+        logger.debug(
             f"UnslothTrainer::evaluation| Predict labels type: {type(predict_labels)}\n"
             f"UnslothTrainer::evaluation| Got logits and labels, types: {type(logits)}, {type(labels)}."
         )
 
         # TODO: Remove or improve this check.
         if type(logits) is tuple:
-            self.logger.debug(
+            logger.debug(
                 f"UnslothTrainer::evaluation| Logits is tuple:\n* Size:{len(logits)},\n* Items:{logits}"
             )
             assert (
@@ -91,26 +100,25 @@ class UnslothTrainer(AbstractTrainer):
             ), "UnslothTrainer::evaluation| Logits is empty tuple."
 
         if type(labels) is tuple:
-            self.logger.debug(
+            logger.debug(
                 f"UnslothTrainer::evaluation| Labels is tuple:\n* Size:{len(labels)},\n* Items:{labels}"
             )
             assert (
                 len(labels) != 0
             ), "UnslothTrainer::evaluation| Labels is empty tuple."
 
-        if self.tokenizer.pad_token_id is None:
+        pad_token_id = self.tokenizer.get_current_tokenizer().pad_token_id
+        if pad_token_id is None:
             raise ValueError(
                 "UnslothTrainer::evaluation| The tokenizer does not have a pad token id."
             )
 
         skip_token = -100
-        labels = np.where(labels != skip_token, labels, self.tokenizer.pad_token_id)
-        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
+        labels = np.where(labels != skip_token, labels, pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels)
 
         predict = np.argmax(logits, axis=-1)
-        decoded_predictions = self.tokenizer.batch_decode(
-            predict, skip_special_tokens=True
-        )
+        decoded_predictions = self.tokenizer.batch_decode(predict)
 
         return self.evaluator.compute(
             predictions=decoded_predictions, references=decoded_labels
@@ -132,13 +140,17 @@ class UnslothTrainer(AbstractTrainer):
         train_conf = self.exp_config.training_arguments
         lora_conf = self.exp_config.peft_method.lora_conf
 
+        max_seq_length = (
+            model_conf.max_seq_length if model_conf.max_seq_length is not None else 2048
+        )
         model_tokenizer = FastLanguageModel.from_pretrained(
             self.exp_config.llm_model.llm_url,
             # TODO: add config support
             dtype=torch.float16 if train_conf.fp16 else torch.bfloat16,  # Not good...
             device_map="auto",
-            max_seq_length=model_conf.max_seq_length,
-            load_in_4bit=False,
+            max_seq_length=max_seq_length,
+            load_in_4bit=model_conf.load_in_4bit,
+            load_in_8bit=model_conf.load_in_8bit,
         )
 
         model: FastLanguageModel = model_tokenizer[0]
@@ -157,12 +169,13 @@ class UnslothTrainer(AbstractTrainer):
                 interpolation=0.5,
             )
 
-            self.logger.info(
+            logger.info(
                 "UnslothTrainer::_get_model| Added new tokens to the tokenizer, current length: %d",
                 len(tokenizer),
             )
 
-        self.logger.debug("Model:%s", model)
+        logger.debug("Model:%s", model)
+        logger.debug("Tokenizer len:%d", len(tokenizer))
 
         return FastLanguageModel.get_peft_model(
             model,
@@ -179,6 +192,9 @@ class UnslothTrainer(AbstractTrainer):
             use_gradient_checkpointing=train_conf.gradient_checkpointing,
             layers_to_transform=lora_conf.layers_to_transform,
             random_state=13,
+            max_seq_length=model_conf.max_seq_length
+            if model_conf.max_seq_length is not None
+            else 2048,
             # temporary_location=
         ), tokenizer
 
@@ -188,20 +204,22 @@ class UnslothTrainer(AbstractTrainer):
         Model will be saved in `exp_config.save_to / exp_config.experiment_name`.
         """
 
-        self.logger.info("train:: Start training")
+        logger.info("train:: Start training")
 
         sft_conf = SFTConfig(**self.exp_config.training_arguments.to_dict())
+
+        logger.info(self.dataset.train[0])
 
         trainer = SFTTrainer(
             model=self.model,
             args=sft_conf,
-            packing=False,
-            dataset_text_field="input_sentences",
             train_dataset=self.dataset.train.shuffle(13),
-            eval_dataset=self.dataset.test.shuffle(13),
+            eval_dataset=self.dataset.test.shuffle(13)
+            if self.dataset.test is not None
+            else None,
             compute_metrics=self.evaluate,
             data_collator=DataCollatorForLanguageModeling(
-                tokenizer=self.tokenizer, mlm=False
+                tokenizer=self.tokenizer.get_current_tokenizer(), mlm=False
             ),
         )
 
@@ -214,8 +232,13 @@ class UnslothTrainer(AbstractTrainer):
         if self.exp_config.save_merged:
             merged_dir = output_path / "merged_model"
             merged_dir.mkdir(exist_ok=True, parents=True)
+
+            self.tokenizer.get_current_tokenizer().save_pretrained(
+                merged_dir.as_posix()
+            )
+
             merged_model = trainer.model.merge_and_unload(
                 progressbar=True, safe_merge=True
-            )
+            )  # type: ignore
+
             merged_model.save_pretrained(merged_dir.as_posix())
-            self.tokenizer.save_pretrained(merged_dir.as_posix())

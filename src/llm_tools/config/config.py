@@ -10,7 +10,6 @@ Dependencies: pydantic
 """
 
 from pathlib import Path
-from typing import Optional, Tuple, Type
 
 from llm_tools.config.dataset_config import DatasetConfig
 from llm_tools.config.environment_config import EnvironmentConfig
@@ -37,15 +36,15 @@ class Config(BaseSettings):
         validate_default=False,
     )
 
-    config_version: str = Field(default="0.4.2", frozen=True)
+    config_version: str = Field(default="0.4.7", frozen=True)
     environment: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
     llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
     dataset: DatasetConfig = Field(default=DatasetConfig(), frozen=True)
-    train: Optional[TrainConfig] = Field(default=None, frozen=True)
+    train: TrainConfig | None = Field(default=None, frozen=True)
 
     @field_validator("config_version")
     def validate_config_version(cls, config_version: str) -> str:
-        if config_version != "0.4.2":
+        if config_version != "0.4.7":
             raise ValueError(
                 f"Config version {config_version} is not supported. Check current version in docs."
             )
@@ -54,12 +53,12 @@ class Config(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
-    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
             env_settings,

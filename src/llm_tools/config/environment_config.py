@@ -17,11 +17,11 @@ from llm_tools.type.runner_type import RunnerType
 
 
 class EnvironmentConfig(BaseSettings):
-    runner_type: RunnerType = Field(default="hf", frozen=True)
+    runner_type: RunnerType = Field(default=RunnerType.HF, frozen=True)
     device_type: str = Field(default="auto", frozen=True)
-    backup_path: Path = Field(default=Path("./backups"), frozen=True)
+    backup_path: Path | None = Field(default=Path("./backups"), frozen=True)
     num_workers: int = Field(default=0, frozen=True, ge=0)
 
     def model_post_init(self, __context: Any) -> None:
-        if not self.backup_path.exists():
+        if self.backup_path is not None and not self.backup_path.exists():
             self.backup_path.mkdir(parents=True)

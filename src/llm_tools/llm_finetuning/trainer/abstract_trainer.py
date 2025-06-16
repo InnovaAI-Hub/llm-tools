@@ -15,19 +15,22 @@ Dependencies:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
-from datasets import Dataset
+from datasets import Dataset as HFDataset
+from llm_tools.auto_tokenizer_processor.abstract_wrapper import AbstractTokenizerWrapper
+from llm_tools.config.dataset_config import DatasetConfig
+from llm_tools.dataset.dataset import Dataset
 
 
 @dataclass(slots=True, config=ConfigDict(arbitrary_types_allowed=True))
 class PreparedDataset:
-    train: Dataset
-    test: Dataset
+    train: HFDataset
+    test: Optional[HFDataset]
 
 
 class AbstractTrainer(ABC):
@@ -40,15 +43,42 @@ class AbstractTrainer(ABC):
         raise NotImplementedError
 
     @staticmethod
-    def get_dataset(dataset_path: Path, tokenizer) -> PreparedDataset:
+    def get_dataset(
+        tokenizer: AbstractTokenizerWrapper,
+        dataset_path: Path,
+        config: DatasetConfig,
+        eval_path: None | Path = None,
+        test_size: float = 0.1,
+    ) -> PreparedDataset:
         is_parquet = dataset_path.suffix == ".parquet"
 
         messages_df = (
             pd.read_parquet(dataset_path) if is_parquet else pd.read_csv(dataset_path)
         )
 
-        ds = HfMsgDataset.prepare_to_train(
-            messages_df, tokenizer=tokenizer, test_size=0.1
-        )
+        dataset = Dataset(config)
+        dataset.load_dataset(messages_df)
 
-        return PreparedDataset(train=ds[0], test=ds[1])
+        res = None
+        if eval_path is not None:
+            is_parquet = eval_path.suffix == ".parquet"
+            eval_df = (
+                pd.read_parquet(eval_path) if is_parquet else pd.read_csv(eval_path)
+            )
+
+            test_ds = Dataset(config)
+            test_ds.load_dataset(eval_df)
+
+            res = PreparedDataset(
+                train=dataset.convert_to_hf(tokenizer),
+                test=test_ds.convert_to_hf(tokenizer),
+            )
+
+        else:
+            train, test = dataset.train_test_split(test_size)
+            res = PreparedDataset(
+                train=train.convert_to_hf(tokenizer),
+                test=test.convert_to_hf(tokenizer),
+            )
+
+        return res

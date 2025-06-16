@@ -10,8 +10,6 @@ Dependencies: pydantic, llm_tools.llm_inference
 """
 
 from pathlib import Path
-from typing import Optional
-
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -22,21 +20,26 @@ from llm_tools.type.url_type import UrlType
 
 class ModelConfigLLM(BaseSettings):
     llm_url: UrlType = Field(default="undefined", frozen=True)
-    tokenizer_url: Optional[str] = Field(
+    tokenizer_url: str | None = Field(
         default=None, frozen=True
     )  # TODO: Change to UrlType
-    peft_path: Optional[Path] = Field(default=None, frozen=True)
+    peft_path: Path | None = Field(default=None, frozen=True)
     llm_model_type: ModelType = Field(default=ModelType.LLAMA3, frozen=True)
-    resize_embed_layer: Optional[int] = Field(default=None, frozen=True)
+
+    # Used when we load model from unsloth
+    load_in_4bit: bool = Field(default=False, frozen=True)
+    load_in_8bit: bool = Field(default=False, frozen=True)
+
+    resize_embed_layer: int | None = Field(default=None, frozen=True)
     save_merged_model: bool = Field(default=False, frozen=True)
 
     token: str = Field(default="undefined", frozen=True)
 
     max_new_tokens: int = Field(default=512, frozen=True)  # for generation
-    max_seq_length: Optional[int] = Field(
+    max_seq_length: int | None = Field(
         default=None, frozen=True
     )  # It used only in tokenize
-    max_model_len: Optional[int] = Field(
+    max_model_len: int | None = Field(
         default=None, frozen=True
     )  # It used for global tokenizer max limit
 
@@ -44,8 +47,8 @@ class ModelConfigLLM(BaseSettings):
     top_p: float = Field(default=0.5, frozen=True, ge=0.0, le=1.0)
 
     terminators: list[int] = Field(default=[], frozen=True)
-    pad_token_id: Optional[int] = Field(default=None, frozen=True)
-    pad_token: Optional[str] = Field(default=None, frozen=True)
+    pad_token_id: None | int = Field(default=None, frozen=True)
+    pad_token: None | str = Field(default=None, frozen=True)
 
     do_sample: bool = Field(default=False, frozen=True)
 

@@ -1,17 +1,16 @@
 from pathlib import Path
-from typing import Optional  # ,  override
+from typing import Optional, override
 
 import pandas as pd
-from datasets import Dataset
+from datasets import Dataset as HFDataset
 from llm_tools.abstract_pipeline import AbstractPipeline
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
-from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.dataset.dataset import Dataset
 from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 from llm_tools.llm_inference.runner.runner_getter import RunnerGetter
 
 
 class Pipeline(AbstractPipeline):
-    #    @override
+    @override
     def _additional_setup(self) -> None:
         """
         Setup the pipeline by initializing the model runner based on the configuration.
@@ -23,11 +22,11 @@ class Pipeline(AbstractPipeline):
         if self.config is None:
             raise RuntimeError("Pipeline::_additional_setup| Config is not set")
 
-        self.runner: AbstractModelRunner = RunnerGetter.get_runner(
+        self.runner = RunnerGetter.get_runner(
             self.config.environment.runner_type, self.config
         )
 
-    #    @override
+    @override
     def _get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
         """
         Get the dataset from the dataset file and split it to train and test sets.
@@ -55,15 +54,17 @@ class Pipeline(AbstractPipeline):
 
         try:
             dataset_df = pd.read_csv(dataset_path)
-            return HfMsgDataset.prepare_to_train(dataset_df, self.config)
+            ds = Dataset(self.config)
+            ds.load_dataset(dataset_df)
+            return ds.train_test_split()
         except Exception as e:
             raise RuntimeError(
                 f"Pipeline::_get_dataset| Error while read or parse dataset: {e}"
             )
 
-    #    @override
+    @override
     def _run(
-        self, dataset: Optional[HfMsgDataset | Dataset] = None
+        self, dataset: Optional[HFDataset | Dataset] = None
     ) -> list[ModelOutputItem]:
         """
         Run the pipeline on the dataset.

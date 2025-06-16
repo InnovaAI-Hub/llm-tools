@@ -6,26 +6,30 @@ authors = [
     { name = "Artem Durynin", email = "artem5542@gmail.com" }
 ]
 dependencies = [
-    "pillow>=9.4.0",
+    "vllm>=0.8",
+    "pillow>=11.0.0",
     "pandas>=2.2.3",
-    "torch>=2.5.0",  # Align with pytorch>=2.5.*
-    "torchvision==0.20.1",
-    "pydantic>=2.7.3",
-    "pydantic-settings>=2.3.1",
-    "pre-commit>=3.7.1",
-    "ruff>=0.4.8",
-    "transformers>=4.41.2",
-    "accelerate>=0.31.0",
-    "openai>=1.5.2",
-    "pyarrow>=16.1.0",
-    "pytest>=8.2.2",
-    "peft>=0.13.2",
-    "evaluate>=0.4.1",
-    "rouge_score"
+    "pydantic>=2.11.3",
+    "pydantic-settings>=2.8.1",
+    "openai>=1.73.0",
+    "rouge-score>=0.1.2",
+    "ruff>=0.11.5",
+    "transformers>=4.51.2",
+    "pyarrow>=19.0.1",
+    "peft>=0.15.1",
+    "evaluate>=0.4.3",
+    "pytest>=8.3.5",
+    "trl>=0.15.2",
+    "unsloth>=2025.4.7",
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.7",
+    "cairosvg>=2.7.1",
+    "pip>=25.1.1",
+    "wandb>=0.19.11",
 ]
 
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [build-system]
 requires = ["hatchling"]
@@ -41,10 +45,10 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/llm_tools"]
 
-[[tool.rye.sources]]
-name = "torch"
-url = "https://download.pytorch.org/whl/cpu"
-type = "index"
+#[[tool.rye.sources]]
+#name = "torch"
+#url = "https://download.pytorch.org/whl/cpu"
+#type = "index"
 
 [tool.hatch.dependencies.overrides]
 # Add Git dependencies as overrides for `pip` installations

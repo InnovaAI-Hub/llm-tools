@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 import logging
 
 from llm_tools.config.config import Config
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.dataset.dataset import Dataset
 from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 
 
@@ -31,9 +31,9 @@ class AbstractModelRunner(ABC):
         self.model_config = model_config.llm_model
 
     @abstractmethod
-    def execute_once(self, input: str) -> str:
+    def execute_once(self, model_input: str) -> str:
         raise NotImplementedError
 
     @abstractmethod
-    def execute(self, input: HfMsgDataset) -> list[ModelOutputItem]:
+    def execute(self, model_input_ds: Dataset) -> list[ModelOutputItem]:
         raise NotImplementedError

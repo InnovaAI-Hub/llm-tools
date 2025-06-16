@@ -15,13 +15,13 @@ Dependencies:
 """
 
 import logging
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
 
-from datasets import Dataset
+from datasets import Dataset as HFDataset
 from llm_tools.config.config import Config
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.dataset.dataset import Dataset
 from pydantic import BaseModel, ConfigDict, Field
 
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
@@ -29,20 +29,22 @@ from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 from llm_tools.llm_finetuning.trainer.abstract_trainer import AbstractTrainer
 
 
-class AbstractPipeline(BaseModel):
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+
+class AbstractPipeline(BaseModel, ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    logger: logging.Logger = Field(default=logging.getLogger(__name__))
     config_path: Optional[Path] = Field(default=None)
     config: Optional[Config] = Field(default=None)
     runner: Optional[AbstractModelRunner] = Field(default=None)
     trainer: Optional[AbstractTrainer] = Field(default=None)
 
     def model_post_init(self, __context) -> None:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        )
-
         self.config = self.get_config()
         self._additional_setup()
 
@@ -65,7 +67,7 @@ class AbstractPipeline(BaseModel):
         if self.config is not None:
             return self.config
 
-        self.logger.debug("Pipeline::get_config| Config_path: %s", self.config_path)
+        logger.debug("Pipeline::get_config| Config_path: %s", self.config_path)
         if self.config_path is not None:
             return Config.from_yaml(self.config_path)
 
@@ -95,11 +97,11 @@ class AbstractPipeline(BaseModel):
 
     @abstractmethod
     def _run(
-        self, dataset: Optional[HfMsgDataset | Dataset] = None
+        self, dataset: Optional[HFDataset | Dataset] = None
     ) -> list[ModelOutputItem]:
         raise NotImplementedError
 
-    def run(self, dataset: HfMsgDataset | Dataset) -> list[ModelOutputItem]:
+    def run(self, dataset: HFDataset | Dataset) -> list[ModelOutputItem]:
         """
         Runs the pipeline on the dataset.
 
@@ -112,7 +114,7 @@ class AbstractPipeline(BaseModel):
         Returns:
             list[ModelOutputItem]: List with model output items.
         """
-        self.logger.info("Pipeline::run| Start application.")
+        logger.info("Pipeline::run| Start application.")
         try:
             if self.config is None:
                 raise RuntimeError("Pipeline::run| Config is not set")
@@ -120,5 +122,5 @@ class AbstractPipeline(BaseModel):
             return self._run(dataset)
 
         except Exception as error:
-            self.logger.critical("Pipeline::run: %s", error, exc_info=True)
+            logger.critical("Pipeline::run: %s", error, exc_info=True)
             return []

@@ -1,43 +1,17 @@
-config_version: 0.0.32
- 
-llm_model:
-  llm_url: "NousResearch/Meta-Llama-3.1-8B-Instruct"
-  max_new_tokens: 100000
-  max_tokens: 100000
-  max_seq_length: 100000
- 
-  terminators:
-    - 128001 # tokenizer.eos_token_id
-    - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
- 
-  temperature: 0.6
-  top_p: 0.9
-  pad_token_id: 128001
-  pad_token: <|eot_id|>
- 
- 
-  do_sample: true
- 
-# Dataset settings
-dataset:
-  batch_size: 10
-  add_generation_prompt: true
- 
-environment:
-  runner_type: hf
-  device_type: auto
-  backup_path: "./backup"
-  num_workers: 1
- 
+config_version: 0.4.6
+
 train:
   experiments:
-    - experiment_name: psy_v1
+    - experiment_name: svg
       save_to: ./trained/
       metric: meteor
+
+      test_size: 0.0003 # Move to ds settings
+
       peft_method:
         name: "lora"
         lora_conf: # https://huggingface.co/docs/peft/v0.12.0/en/package_reference/lora#peft.LoraConfig
-          r: 16
+          r: 8
           inference_mode: False
           # target_modules: all-linear
           target_modules:
@@ -48,9 +22,9 @@ train:
            - lm_head
            - embed_tokens
            
-          modules_to_save: # Full learn?
-           - lm_head
-           - embed_tokens
+          # modules_to_save:
+          #  - lm_head
+          #  - embed_tokens
  
           lora_alpha: 16
           lora_dropout: 0
@@ -76,11 +50,10 @@ train:
       training_arguments:
         output_dir: "./train_arts"
         overwrite_output_dir: True
-        evaluation_strategy: steps
+        eval_strategy: "steps"
         bf16: True
         # fp16: True
-        num_train_epochs: 15
-        split_batches: False
+        num_train_epochs: 2
         load_best_model_at_end: True
          
         include_tokens_per_second: True
@@ -90,29 +63,29 @@ train:
         learning_rate: 3e-4
  
         torch_compile: True
-        torchdynamo: inductor
          
         eval_accumulation_steps: 1
         eval_on_start: True
-        logging_steps: 100
+        logging_steps: 50
          
-        gradient_accumulation_steps: 1
+        gradient_accumulation_steps: 5
         gradient_checkpointing: True
          
-        run_name: psy_v1
+        run_name: svg
         report_to: wandb
  
-        # auto_find_batch_size: True
-        dataloader_num_workers: 3
-        per_device_train_batch_size: 25
-        per_device_eval_batch_size: 40
+        auto_find_batch_size: False
+        dataloader_num_workers: 0
+        per_device_train_batch_size: 15
+        per_device_eval_batch_size: 1
  
         optim: adamw_torch
- 
- 
+      
+      dataset_config:
+        batch_size: 1
+        add_generation_prompt: true
+
       llm_model:
-        llm_url: "NousResearch/Meta-Llama-3.1-8B-Instruct"
-        max_new_tokens: 128000
-        # max_tokens: 100000
-        # max_seq_length: 90000
-        # max_tokens: 100000
+        llm_url: "unsloth/Qwen3-8B-unsloth-bnb-4bit"
+        max_new_tokens: 24000
+        max_seq_length: 24000
