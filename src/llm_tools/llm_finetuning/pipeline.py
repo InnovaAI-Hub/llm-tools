@@ -16,24 +16,23 @@ Dependencies:
     - pandas
     - datasets
 
-WARNING: This class is not fully supported yet, not tested and should not be used.
+WARNING: This class is not fully supported yet, not tested and should not be used. IT NOT REALIZED
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, override
 
-import pandas as pd
-from datasets import Dataset
+from datasets import Dataset as HfMsgDataset
 from llm_tools.abstract_pipeline import AbstractPipeline
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
+from llm_tools.dataset.dataset import Dataset
 
 
 class TrainerPipeline(AbstractPipeline):
-    #    @override
-    def _get_dataset(self, dataset_path: Path) -> HfMsgDataset | Dataset:
-        dataset_df = pd.read_csv(dataset_path)
-        return HfMsgDataset.prepare_to_train(dataset_df, self.config)
+    @override
+    def _get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
+        # dataset_df = pd.read_csv(dataset_path)
+        raise NotImplementedError
 
-    #    @override
+    @override
     def _run(self, dataset: Optional[HfMsgDataset | Dataset] = None):
         raise NotImplementedError

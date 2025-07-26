@@ -7,13 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 class Dialog:
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self, add_generation_prompt: bool = True) -> None:
         self.msgs: list[BaseMessage] = []
         self.group_id: str = ""
         self.last_role: MsgRoleType = MsgRoleType.SYSTEM
         self.used_roles: set[MsgRoleType] = set()
+        self.add_generation_prompt = add_generation_prompt
 
     def add_msg(self, msg: str, role: MsgRoleType) -> None:
         # 1. Check whether the role is system or not
@@ -50,5 +49,5 @@ class Dialog:
 
     def format_dialog(self, tokenizer: AbstractTokenizerWrapper) -> str:
         dialog = [item.to_dict() for item in self.msgs]
-        result: str = tokenizer.apply_chat_template(dialog)
+        result: str = tokenizer.apply_chat_template(dialog, self.add_generation_prompt)
         return result

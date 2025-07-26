@@ -24,7 +24,7 @@ class Dataset(AbstractDataset):
     def load_dataset(self, df: pd.DataFrame):
         dialogs = []
         for group_id, group in df.groupby("group_id"):
-            dialog = Dialog()
+            dialog = Dialog(self.configs.add_generation_prompt)
             for row in group.itertuples():
                 msg = str(row.content)
                 role = MsgRoleType(row.role)

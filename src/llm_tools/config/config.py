@@ -36,7 +36,7 @@ class Config(BaseSettings):
         validate_default=False,
     )
 
-    config_version: str = Field(default="0.4.7", frozen=True)
+    config_version: str = Field(default="0.5.0", frozen=True)
     environment: EnvironmentConfig = Field(default=EnvironmentConfig(), frozen=True)
     llm_model: ModelConfigLLM = Field(default=ModelConfigLLM(token=""), frozen=True)
     dataset: DatasetConfig = Field(default=DatasetConfig(), frozen=True)
@@ -44,7 +44,7 @@ class Config(BaseSettings):
 
     @field_validator("config_version")
     def validate_config_version(cls, config_version: str) -> str:
-        if config_version != "0.4.7":
+        if config_version != "0.5.0":
             raise ValueError(
                 f"Config version {config_version} is not supported. Check current version in docs."
             )

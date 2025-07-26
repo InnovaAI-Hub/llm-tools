@@ -14,5 +14,5 @@ from pydantic_settings import BaseSettings
 
 
 class DatasetConfig(BaseSettings):
-    add_generation_prompt: bool = True
+    add_generation_prompt: bool = Field(default=True)
     batch_size: int = Field(default=1, ge=1)

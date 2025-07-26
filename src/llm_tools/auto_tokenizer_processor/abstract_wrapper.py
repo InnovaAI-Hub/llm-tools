@@ -58,5 +58,7 @@ class AbstractTokenizerWrapper(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def apply_chat_template(self, msg: list[dict[str, str]]) -> str:
+    def apply_chat_template(
+        self, msg: list[dict[str, str]], add_generation_prompt=True
+    ) -> str:
         raise NotImplementedError

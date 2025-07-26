@@ -27,7 +27,6 @@ import os
 from pathlib import Path
 from typing import override  # Only in python 12.
 
-import evaluate
 import numpy as np
 import torch
 from transformers.data.data_collator import DataCollatorForLanguageModeling
@@ -39,6 +38,7 @@ from unsloth_zoo import tokenizer_utils
 
 from llm_tools.auto_tokenizer_processor.tokenizer_wrapper import TokenizerWrapper
 from llm_tools.config.experiment_config import ExperimentConfig
+from llm_tools.metric.metric_selector import select_metric
 from llm_tools.llm_finetuning.trainer.abstract_trainer import (
     AbstractTrainer,
     PreparedDataset,
@@ -66,9 +66,7 @@ class UnslothTrainer(AbstractTrainer):
             test_size=self.exp_config.test_size,
         )
 
-        self.evaluator: evaluate.EvaluationModule = evaluate.load(
-            self.exp_config.metric
-        )
+        self.metric = select_metric(self.exp_config.metric_config)
 
     @override
     def evaluate(self, predict_labels: EvalPrediction):
@@ -120,8 +118,8 @@ class UnslothTrainer(AbstractTrainer):
         predict = np.argmax(logits, axis=-1)
         decoded_predictions = self.tokenizer.batch_decode(predict)
 
-        return self.evaluator.compute(
-            predictions=decoded_predictions, references=decoded_labels
+        return self.metric.compute(
+            predictions=decoded_predictions, reference=decoded_labels
         )
 
     def _get_model(self) -> tuple[FastLanguageModel, PreTrainedTokenizerFast]:
@@ -188,6 +186,7 @@ class UnslothTrainer(AbstractTrainer):
             bias=lora_conf.bias,
             layers_pattern=lora_conf.layers_pattern,
             use_rslora=lora_conf.use_rslora,
+            use_dora=lora_conf.use_dora,
             loftq_config=lora_conf.loftq_config,
             use_gradient_checkpointing=train_conf.gradient_checkpointing,
             layers_to_transform=lora_conf.layers_to_transform,

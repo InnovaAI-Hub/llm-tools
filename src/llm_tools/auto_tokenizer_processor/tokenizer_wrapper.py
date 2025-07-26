@@ -212,9 +212,11 @@ class TokenizerWrapper(AbstractTokenizerWrapper):
         return tokens
 
     @override
-    def apply_chat_template(self, msg: list[dict[str, str]]) -> str:
+    def apply_chat_template(
+        self, msg: list[dict[str, str]], add_generation_prompt=True
+    ) -> str:
         result = self.tokenizer.apply_chat_template(
-            msg, tokenize=False, add_generation_prompt=True
+            msg, tokenize=False, add_generation_prompt=add_generation_prompt
         )
 
         if not isinstance(result, str):

@@ -8,6 +8,7 @@ from llm_tools.config.additional_token import AdditionalToken
 from llm_tools.config.dataset_config import DatasetConfig
 from llm_tools.config.model_config import ModelConfigLLM
 from llm_tools.config.peft_method import PeftMethod
+from llm_tools.config.metric_config import MetricConfig
 
 
 class ExperimentConfig(BaseSettings):
@@ -18,7 +19,7 @@ class ExperimentConfig(BaseSettings):
     save_merged: bool = Field(default=False, frozen=True)
     llm_model: ModelConfigLLM = Field(ModelConfigLLM(), frozen=True)
     training_arguments: TrainingArguments = Field(frozen=True)
-    metric: str = Field(default="exact_match", frozen=True)
+    metric_config: MetricConfig = Field(frozen=True)
     additional_tokens: list[AdditionalToken] | None = Field(default=None, frozen=True)
     test_size: float = Field(default=0.1, frozen=True)
     eval_path: Path | None = Field(default=None, frozen=True)

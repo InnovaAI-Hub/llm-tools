@@ -26,6 +26,10 @@ dependencies = [
     "cairosvg>=2.7.1",
     "pip>=25.1.1",
     "wandb>=0.19.11",
+    "scikit-image>=0.25.2",
+    "docling>=2.37.0",
+    "llama-index>=0.12.43",
+    "llama-index-node-parser-topic>=0.2.0",
 ]
 
 readme = "README.md"
