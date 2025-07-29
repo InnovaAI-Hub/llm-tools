@@ -1,0 +1,91 @@
+config_version: 0.4.6
+
+train:
+  experiments:
+    - experiment_name: svg
+      save_to: ./trained/
+      metric: meteor
+
+      test_size: 0.0003 # Move to ds settings
+
+      peft_method:
+        name: "lora"
+        lora_conf: # https://huggingface.co/docs/peft/v0.12.0/en/package_reference/lora#peft.LoraConfig
+          r: 8
+          inference_mode: False
+          # target_modules: all-linear
+          target_modules:
+           - q_proj
+           - k_proj
+           - v_proj
+           - o_proj
+           - lm_head
+           - embed_tokens
+           
+          # modules_to_save:
+          #  - lm_head
+          #  - embed_tokens
+ 
+          lora_alpha: 16
+          lora_dropout: 0
+          fan_in_fan_out: False
+          use_rslora: False
+          init_lora_weights: True
+          task_type: CAUSAL_LM # It enum.
+          # If we want to use default value, we don't need to write it here.
+          # base_model_name_or_path: none
+          # revision: none
+          # bias: none
+          # modules_to_save: none
+          # layers_to_transform: none
+          # layers_pattern: none
+          # layer_replication: none
+          # megatron_config: none
+          # rank_pattern: {}
+          # alpha_pattern: {}
+          megatron_core: megatron.core
+          # loftq_config: {}
+          use_dora: False
+ 
+      training_arguments:
+        output_dir: "./train_arts"
+        overwrite_output_dir: True
+        eval_strategy: "steps"
+        bf16: True
+        # fp16: True
+        num_train_epochs: 2
+        load_best_model_at_end: True
+         
+        include_tokens_per_second: True
+        include_num_input_tokens_seen: True
+         
+        warmup_steps: 20
+        learning_rate: 3e-4
+ 
+        torch_compile: True
+         
+        eval_accumulation_steps: 1
+        eval_on_start: True
+        logging_steps: 50
+         
+        gradient_accumulation_steps: 5
+        gradient_checkpointing: True
+         
+        run_name: svg
+        report_to: wandb
+ 
+        auto_find_batch_size: False
+        dataloader_num_workers: 0
+        per_device_train_batch_size: 15
+        per_device_eval_batch_size: 1
+ 
+        optim: adamw_torch
+      
+      dataset_config:
+        batch_size: 1
+        add_generation_prompt: true
+
+      llm_model:
+        llm_url: "unsloth/Qwen3-8B-unsloth-bnb-4bit"
+        max_new_tokens: 24000
+        max_seq_length: 24000

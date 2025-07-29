@@ -1,0 +1,118 @@
+config_version: 0.0.32
+ 
+llm_model:
+  llm_url: "NousResearch/Meta-Llama-3.1-8B-Instruct"
+  max_new_tokens: 100000
+  max_tokens: 100000
+  max_seq_length: 100000
+ 
+  terminators:
+    - 128001 # tokenizer.eos_token_id
+    - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
+ 
+  temperature: 0.6
+  top_p: 0.9
+  pad_token_id: 128001
+  pad_token: <|eot_id|>
+ 
+ 
+  do_sample: true
+ 
+# Dataset settings
+dataset:
+  batch_size: 10
+  add_generation_prompt: true
+ 
+environment:
+  runner_type: hf
+  device_type: auto
+  backup_path: "./backup"
+  num_workers: 1
+ 
+train:
+  experiments:
+    - experiment_name: psy_v1
+      save_to: ./trained/
+      metric: meteor
+      peft_method:
+        name: "lora"
+        lora_conf: # https://huggingface.co/docs/peft/v0.12.0/en/package_reference/lora#peft.LoraConfig
+          r: 16
+          inference_mode: False
+          # target_modules: all-linear
+          target_modules:
+           - q_proj
+           - k_proj
+           - v_proj
+           - o_proj
+           - lm_head
+           - embed_tokens
+           
+          modules_to_save: # Full learn?
+           - lm_head
+           - embed_tokens
+ 
+          lora_alpha: 16
+          lora_dropout: 0
+          fan_in_fan_out: False
+          use_rslora: False
+          init_lora_weights: True
+          task_type: CAUSAL_LM # It enum.
+          # If we want to use default value, we don't need to write it here.
+          # base_model_name_or_path: none
+          # revision: none
+          # bias: none
+          # modules_to_save: none
+          # layers_to_transform: none
+          # layers_pattern: none
+          # layer_replication: none
+          # megatron_config: none
+          # rank_pattern: {}
+          # alpha_pattern: {}
+          megatron_core: megatron.core
+          # loftq_config: {}
+          use_dora: False
+ 
+      training_arguments:
+        output_dir: "./train_arts"
+        overwrite_output_dir: True
+        evaluation_strategy: steps
+        bf16: True
+        # fp16: True
+        num_train_epochs: 15
+        split_batches: False
+        load_best_model_at_end: True
+         
+        include_tokens_per_second: True
+        include_num_input_tokens_seen: True
+         
+        warmup_steps: 20
+        learning_rate: 3e-4
+ 
+        torch_compile: True
+        torchdynamo: inductor
+         
+        eval_accumulation_steps: 1
+        eval_on_start: True
+        logging_steps: 100
+         
+        gradient_accumulation_steps: 1
+        gradient_checkpointing: True
+         
+        run_name: psy_v1
+        report_to: wandb
+ 
+        # auto_find_batch_size: True
+        dataloader_num_workers: 3
+        per_device_train_batch_size: 25
+        per_device_eval_batch_size: 40
+ 
+        optim: adamw_torch
+ 
+ 
+      llm_model:
+        llm_url: "NousResearch/Meta-Llama-3.1-8B-Instruct"
+        max_new_tokens: 128000
+        # max_tokens: 100000
+        # max_seq_length: 90000
+        # max_tokens: 100000

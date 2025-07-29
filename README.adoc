@@ -1,0 +1,79 @@
+= LLM Tools
+:app-name: LLM Tools
+:author: Artem Durynin
+:email: artem.d@raftds.com, mail@durynin1.ru
+:toc-title: Table of Contents
+:toc: auto
+:icons: font
+
+[toc]
+
+== Description
+
+LLM Tools is a simple and modular pipeline designed for working with large language models (LLMs) using configurable runners, trainers, and models. The framework allows you to easily switch between different Hugging Face models without rewriting core logic, requiring only changes in the YAML configuration.
+
+== Key Features
+* Single pipeline class for various Hugging Face models.
+* Switch models by modifying the configuration file—no code changes required.
+* Extensible to support different runners and trainers.
+* Centralized configuration management via YAML.
+
+== Installation
+
+=== Prerequisites
+
+- Python 3.12+
+- `micromamba` for managing development environments.
+
+In future releases, support for Rye will be added.
+
+=== Steps
+
+. Clone this repository:
++
+[, bash]
+----
+git clone https://github.com/your-repo/llm-tools.git
+cd llm-tools
+----
+
+. Set up `micromamba`:
++
+[, bash]
+----
+micromamba create -f ./environment.yml
+micromamba activate llm-tools
+----
+
+. Install package:
++
+[, bash]
+----
+pip install .
+----
+
+== Usage
+
+Once installed, you can use the pipeline by providing a YAML configuration file. The only change required to switch models is updating the `model_path` in the configuration. Examples in the `examples` directory.
+
+== Future Plans
+
+* Add support for Rye as a development environment tool.
+* Extend examples for using inference and training pipelines.
+* Provide detailed configuration documentation for the YAML format.
+
+== Dependencies
+
+* Python 3.12+
+* micromamba
+* pandas
+* datasets
+* torch
+* vllm
+* pydantic
+
+NOTE: Update this later.
+
+== License
+
+*To be added.*

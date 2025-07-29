@@ -1,0 +1,30 @@
+config_version: 0.4.6
+
+llm_model:
+  llm_url: "Qwen/Qwen3-0.6B"
+
+  max_new_tokens: 1000
+  max_model_len: 5000
+  max_seq_length: 1000
+
+  # terminators: # REQUIRED
+  #   - 128001 # tokenizer.eos_token_id
+  #   - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
+
+  temperature: 0.6 # REQUIRED
+  top_p: 0.9
+  # pad_token_id: 128001
+  # pad_token: <|eot_id|>
+
+  do_sample: true
+
+# Dataset settings
+dataset:
+  batch_size: 10
+  add_generation_prompt: true
+
+environment:
+  runner_type: hf
+  device_type: auto
+  backup_path: "./backup"
+  num_workers: 1

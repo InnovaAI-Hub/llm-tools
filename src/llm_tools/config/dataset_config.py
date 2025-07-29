@@ -9,9 +9,10 @@ Python Version: 3.10
 Dependencies: pydantic
 """
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
-class DatasetConfig(BaseModel):
-    add_generation_prompt: bool = Field(default=True, frozen=True)
-    batch_size: int = Field(default=1, frozen=True, ge=1)
+class DatasetConfig(BaseSettings):
+    add_generation_prompt: bool = Field(default=True)
+    batch_size: int = Field(default=1, ge=1)

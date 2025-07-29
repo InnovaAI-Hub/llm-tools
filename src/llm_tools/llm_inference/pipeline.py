@@ -1,59 +1,86 @@
-import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, override
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field
-
-from llm_tools.config.config import Config
-from llm_tools.dataset.hf_msg_dataset import HfMsgDataset
-from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from datasets import Dataset as HFDataset
+from llm_tools.abstract_pipeline import AbstractPipeline
+from llm_tools.dataset.dataset import Dataset
+from llm_tools.llm_inference.runner.model_output_item import ModelOutputItem
 from llm_tools.llm_inference.runner.runner_getter import RunnerGetter
 
 
-class Pipeline(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    logger: logging.Logger = Field(default=logging.getLogger(__name__))
-    config_path: Optional[Path]
-    config: Optional[Config] = None
-    results: Optional[list[dict]] = Field(default=None, init=False)
+class Pipeline(AbstractPipeline):
+    @override
+    def _additional_setup(self) -> None:
+        """
+        Setup the pipeline by initializing the model runner based on the configuration.
 
-    def model_post_init(self, __context) -> None:
-        self.config = self.get_config()
+        Raises:
+            RuntimeError: id config is none.
+        """
 
-    def get_config(self) -> Config:
-        if self.config is not None:
-            return self.config
-
-        self.logger.debug("Pipeline::get_config| Config_path: %s", self.config_path)
-        if self.config_path is not None:
-            return Config.from_yaml(self.config_path)
-
-        raise RuntimeError("Pipeline::get_config| Config is not set")
-
-    def get_dataset(self, dataset_path: Path) -> HfMsgDataset:
         if self.config is None:
-            raise RuntimeError("Pipeline::get_dataset| Config is not set")
+            raise RuntimeError("Pipeline::_additional_setup| Config is not set")
 
-        return HfMsgDataset(pd.read_csv(dataset_path), self.config)
-
-    def run(self, dataset: HfMsgDataset):
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        self.runner = RunnerGetter.get_runner(
+            self.config.environment.runner_type, self.config
         )
 
-        self.logger.info("MainApplication::run| Start application.")
-        try:
-            if self.config is None:
-                raise RuntimeError("Pipeline::run| Config is not set")
+    @override
+    def _get_dataset(self, dataset_path: Path) -> tuple[Dataset, Dataset]:
+        """
+        Get the dataset from the dataset file and split it to train and test sets.
 
-            runner: AbstractModelRunner = RunnerGetter.get_runner(
-                self.config.general.runner_type, self.config
+        Args:
+            dataset_path (Path): Path to the dataset file. At this moment is only `csv` file.
+
+        Raises:
+            RuntimeError: if config is none.
+            FileNotFoundError: if dataset file is not found.
+
+        Returns:
+            tuple[Dataset, Dataset]: Train and test datasets.
+
+        TODO:
+            Add support for `parquet` file.
+        """
+        if self.config is None:
+            raise RuntimeError("Pipeline::_get_dataset| Config is not set")
+
+        if not dataset_path.exists():
+            raise FileNotFoundError(
+                f"Pipeline::_get_dataset| Dataset file not found: {dataset_path}"
             )
 
-            return runner.execute(dataset)
+        try:
+            dataset_df = pd.read_csv(dataset_path)
+            ds = Dataset(self.config)
+            ds.load_dataset(dataset_df)
+            return ds.train_test_split()
+        except Exception as e:
+            raise RuntimeError(
+                f"Pipeline::_get_dataset| Error while read or parse dataset: {e}"
+            )
 
-        except Exception as error:
-            self.logger.critical("MainApplication::run: %s", error, exc_info=True)
-            return []
+    @override
+    def _run(
+        self, dataset: Optional[HFDataset | Dataset] = None
+    ) -> list[ModelOutputItem]:
+        """
+        Run the pipeline on the dataset.
+
+        Args:
+            dataset (Optional[HfMsgDataset  |  Dataset], optional): Dataset to run the pipeline on. Defaults to None.
+            TODO: Why is optional?
+
+        Raises:
+            ValueError: If dataset is None.
+
+        Returns:
+            list[ModelOutputItem]: List with model output items.
+        """
+
+        if dataset is None:
+            raise ValueError("Pipeline::_run| Dataset is None")
+
+        return self.runner.execute(dataset)

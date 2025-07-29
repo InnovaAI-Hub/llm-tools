@@ -1,0 +1,39 @@
+config_version: "0.4.4"
+
+llm_model:
+  # llm_url: "unsloth/Meta-Llama-3.1-8B-Instruct"
+  # llm_url: "NousResearch/Hermes-3-Llama-3.1-8B"
+  llm_url: "/home/fedora/workspace/inf_dir/model/maria_v14"
+  # peft_path: "/home/fedora/workspace/inf_dir/adapter/maria_v11"
+  tokenizer_url: "/home/fedora/workspace/inf_dir/model/maria_v14"
+  # tokenizer_url: "/home/fedora/workspace/train_dir/trained/pretrain_exp/merged_model"
+  # resize_embed_layer: 129488
+  
+  # max_tokens: 128000
+  max_model_len: 128000  
+  max_new_tokens: 60000
+  # max_seq_length: 6000
+
+  terminators:
+    - 128001 # tokenizer.eos_token_id
+    - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    - 128004 # pad_token
+
+
+  temperature: 0.5
+  top_p: 0.9
+  pad_token_id: 128004
+  pad_token: "<|finetune_right_pad_id|>"
+
+  do_sample: true
+
+# Dataset settings
+dataset:
+  batch_size: 200
+  add_generation_prompt: true
+
+environment:
+  runner_type: vllm
+  device_type: auto
+  backup_path: "./backup.dt"
+  num_workers: 0

@@ -1,25 +1,30 @@
-config_version: '0.0.1'
+config_version: 0.4.5
 
 llm_model:
-  llm_url: "NousResearch/Meta-Llama-3-8B-Instruct"
-  max_new_tokens: 1024
+  llm_url: "NousResearch/Meta-Llama-3.1-8B-Instruct"
 
-  terminators: 
+  max_new_tokens: 1000
+  max_model_len: 5000
+  max_seq_length: 1000
+
+  terminators: # REQUIRED
     - 128001 # tokenizer.eos_token_id
     - 128009 # tokenizer.convert_tokens_to_ids("<|eot_id|>")
- 
-  temperature: 0.6
+
+  temperature: 0.6 # REQUIRED
   top_p: 0.9
   pad_token_id: 128001
- 
-  do_sample: true
-  
-  # Dataset settings
-  dataset: 
-    add_generation_prompt: true
+  pad_token: <|eot_id|>
 
-general:
+  do_sample: true
+
+# Dataset settings
+dataset:
+  batch_size: 10
+  add_generation_prompt: true
+
+environment:
   runner_type: hf
-  device: auto
+  device_type: cpu
   backup_path: "./backup"
   num_workers: 1

@@ -17,3 +17,14 @@ wheels/
 .vscode
 
 .env
+wandb
+test_train
+trained
+train_arts
+.micromamba
+
+doc/html
+doc/latex
+LLM_Tools.srctrlbm
+LLM_Tools.srctrldb
+LLM_Tools.srctrlprj
