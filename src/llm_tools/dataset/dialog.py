@@ -51,3 +51,7 @@ class Dialog:
         dialog = [item.to_dict() for item in self.msgs]
         result: str = tokenizer.apply_chat_template(dialog, self.add_generation_prompt)
         return result
+
+    def to_list(self):
+        result = [item.to_dict() for item in self.msgs]
+        return result

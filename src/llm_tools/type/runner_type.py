@@ -20,6 +20,6 @@ from enum import StrEnum
 
 class RunnerType(StrEnum):
     HF = "hf"
-    LLAMACPP = "llamacpp"
+    UNSLOTH = "unsloth"
     VLLM = "vllm"
-    OPENAI = "openai"
+    SERVER = "server"

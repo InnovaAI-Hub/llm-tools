@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, override
+from typing import override
 
 import pandas as pd
 from datasets import Dataset as HFDataset
@@ -54,7 +54,7 @@ class Pipeline(AbstractPipeline):
 
         try:
             dataset_df = pd.read_csv(dataset_path)
-            ds = Dataset(self.config)
+            ds = Dataset(self.config.dataset)
             ds.load_dataset(dataset_df)
             return ds.train_test_split()
         except Exception as e:
@@ -63,9 +63,7 @@ class Pipeline(AbstractPipeline):
             )
 
     @override
-    def _run(
-        self, dataset: Optional[HFDataset | Dataset] = None
-    ) -> list[ModelOutputItem]:
+    def _run(self, dataset: HFDataset | Dataset | None = None) -> list[ModelOutputItem]:
         """
         Run the pipeline on the dataset.
 
@@ -83,4 +81,24 @@ class Pipeline(AbstractPipeline):
         if dataset is None:
             raise ValueError("Pipeline::_run| Dataset is None")
 
-        return self.runner.execute(dataset)
+        if self.runner is None:
+            raise ValueError("Pipeline::_run| Runner is None")
+
+        if self.config is None:
+            raise RuntimeError(
+                "Pipeline::_run| Config is not set. Please set config before running the pipeline."
+            )
+
+        # Convert HFDataset to custom Dataset if needed
+        if isinstance(dataset, HFDataset):
+            ds = Dataset(self.config.dataset)
+
+            pandas_data = dataset.to_pandas()
+            if not isinstance(pandas_data, pd.DataFrame):
+                pandas_data = pd.concat(list(pandas_data), ignore_index=True)
+
+            ds.load_dataset(pandas_data)
+            dataset = ds
+
+        res = self.runner.execute(dataset)
+        return res

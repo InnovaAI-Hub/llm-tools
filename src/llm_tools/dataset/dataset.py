@@ -84,7 +84,6 @@ class Dataset(AbstractDataset):
         raise NotImplementedError
 
     @override
-    @override
     def __len__(self) -> int:
         return len(self.dialogs)
 

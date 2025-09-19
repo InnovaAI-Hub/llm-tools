@@ -10,28 +10,30 @@
 #   universal: false
 
 -e file:.
-absl-py==2.2.2
+absl-py==2.3.1
     # via rouge-score
-accelerate==1.6.0
+accelerate==1.9.0
+    # via docling
+    # via docling-ibm-models
     # via peft
     # via trl
     # via unsloth
     # via unsloth-zoo
-aiohttp==3.9.5
-    # via datasets
+aiohappyeyeballs==2.6.1
+    # via aiohttp
+aiohttp==3.12.15
     # via fsspec
     # via llama-index-core
     # via vllm
-aiosignal==1.3.1
+aiosignal==1.4.0
     # via aiohttp
-    # via ray
 aiosqlite==0.21.0
     # via llama-index-core
-airportsdata==20250224
+airportsdata==20250706
     # via outlines
 annotated-types==0.7.0
     # via pydantic
-anyio==4.4.0
+anyio==4.9.0
     # via httpx
     # via openai
     # via starlette
@@ -40,27 +42,27 @@ astor==0.8.1
     # via depyf
 asttokens==3.0.0
     # via stack-data
-attrs==23.2.0
+attrs==25.3.0
     # via aiohttp
     # via jsonlines
     # via jsonschema
     # via referencing
-banks==2.1.2
+banks==2.2.0
     # via llama-index-core
 beautifulsoup4==4.13.4
     # via docling
     # via llama-index-readers-file
-bitsandbytes==0.45.5
+bitsandbytes==0.46.1
     # via unsloth
-blake3==1.0.4
+blake3==1.0.5
     # via vllm
-cachetools==5.5.2
+cachetools==6.1.0
     # via vllm
 cairocffi==1.7.1
     # via cairosvg
-cairosvg==2.7.1
+cairosvg==2.8.2
     # via llm-tools
-certifi==2025.6.15
+certifi==2025.7.14
     # via docling
     # via httpcore
     # via httpx
@@ -69,9 +71,9 @@ certifi==2025.6.15
     # via sentry-sdk
 cffi==1.17.1
     # via cairocffi
-charset-normalizer==2.1.1
+charset-normalizer==3.4.2
     # via requests
-click==8.1.7
+click==8.2.1
     # via llama-cloud-services
     # via nltk
     # via ray
@@ -84,39 +86,44 @@ cloudpickle==3.1.1
     # via vllm
 colorama==0.4.6
     # via griffe
-comm==0.2.2
+comm==0.2.3
     # via ipykernel
     # via ipywidgets
-compressed-tensors==0.9.2
+compressed-tensors==0.9.3
     # via vllm
 cssselect2==0.8.0
     # via cairosvg
-cupy-cuda12x==13.4.1
+cupy-cuda12x==13.5.1
     # via ray
 cut-cross-entropy==25.1.1
     # via unsloth-zoo
 dataclasses-json==0.6.7
     # via llama-index-core
-datasets==3.5.0
+datasets==3.6.0
     # via evaluate
     # via trl
     # via unsloth
     # via unsloth-zoo
-debugpy==1.8.14
+debugpy==1.8.15
     # via ipykernel
 decorator==5.2.1
     # via ipython
 defusedxml==0.7.1
     # via cairosvg
+    # via llama-index-readers-file
 deprecated==1.2.18
     # via banks
     # via llama-index-core
     # via llama-index-instrumentation
+    # via opentelemetry-api
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-semantic-conventions
 depyf==0.18.0
     # via vllm
-diffusers==0.33.1
+diffusers==0.34.0
     # via unsloth
-dill==0.3.7
+dill==0.3.8
     # via datasets
     # via depyf
     # via evaluate
@@ -129,19 +136,17 @@ distro==1.9.0
     # via openai
 dnspython==2.7.0
     # via email-validator
-docker-pycreds==0.4.0
-    # via wandb
-docling==2.37.0
+docling==2.43.0
     # via llm-tools
-docling-core==2.38.0
+docling-core==2.44.1
     # via docling
     # via docling-ibm-models
     # via docling-parse
-docling-ibm-models==3.5.0
+docling-ibm-models==3.9.0
     # via docling
-docling-parse==4.0.5
+docling-parse==4.1.0
     # via docling
-docstring-parser==0.16
+docstring-parser==0.17.0
     # via tyro
 easyocr==1.7.2
     # via docling
@@ -149,16 +154,19 @@ einops==0.8.1
     # via vllm
 email-validator==2.2.0
     # via fastapi
+    # via pydantic
 et-xmlfile==2.0.0
     # via openpyxl
-evaluate==0.4.3
+evaluate==0.4.5
     # via llm-tools
 executing==2.2.0
     # via stack-data
-fastapi==0.115.12
+fastapi==0.116.1
     # via vllm
-fastapi-cli==0.0.7
+fastapi-cli==0.0.8
     # via fastapi
+fastapi-cloud-cli==0.1.5
+    # via fastapi-cli
 fastrlock==0.8.3
     # via cupy-cuda12x
 filelock==3.18.0
@@ -172,44 +180,49 @@ filelock==3.18.0
 filetype==1.2.0
     # via docling
     # via llama-index-core
-frozenlist==1.4.1
+frozenlist==1.7.0
     # via aiohttp
     # via aiosignal
-    # via ray
-fsspec==2024.6.1
+fsspec==2025.3.0
     # via datasets
     # via evaluate
     # via huggingface-hub
     # via llama-index-core
     # via torch
-gguf==0.10.0
+gguf==0.17.1
     # via vllm
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.44
+gitpython==3.1.45
     # via wandb
+googleapis-common-protos==1.70.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
 greenlet==3.2.3
     # via sqlalchemy
-griffe==1.7.3
+griffe==1.9.0
     # via banks
-h11==0.14.0
+grpcio==1.74.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+h11==0.16.0
     # via httpcore
     # via uvicorn
 hf-transfer==0.1.9
     # via unsloth
     # via unsloth-zoo
-hf-xet==1.0.3
+hf-xet==1.1.5
     # via huggingface-hub
-httpcore==1.0.5
+httpcore==1.0.9
     # via httpx
 httptools==0.6.4
     # via uvicorn
-httpx==0.27.0
+httpx==0.28.1
     # via fastapi
+    # via fastapi-cloud-cli
     # via llama-cloud
     # via llama-index-core
     # via openai
-huggingface-hub==0.30.2
+huggingface-hub==0.34.3
     # via accelerate
     # via datasets
     # via diffusers
@@ -222,7 +235,7 @@ huggingface-hub==0.30.2
     # via unsloth
     # via unsloth-zoo
     # via vllm
-idna==3.4
+idna==3.10
     # via anyio
     # via email-validator
     # via httpx
@@ -230,8 +243,9 @@ idna==3.4
     # via yarl
 imageio==2.37.0
     # via scikit-image
-importlib-metadata==8.6.1
+importlib-metadata==8.0.0
     # via diffusers
+    # via opentelemetry-api
     # via vllm
 iniconfig==2.1.0
     # via pytest
@@ -239,9 +253,9 @@ interegular==0.3.3
     # via lm-format-enforcer
     # via outlines
     # via outlines-core
-ipykernel==6.29.5
+ipykernel==6.30.0
     # via llm-tools
-ipython==9.2.0
+ipython==9.4.0
     # via ipykernel
     # via ipywidgets
 ipython-pygments-lexers==1.1.1
@@ -255,25 +269,25 @@ jinja2==3.1.6
     # via fastapi
     # via outlines
     # via torch
-jiter==0.9.0
+jiter==0.10.0
     # via openai
-joblib==1.4.2
+joblib==1.5.1
     # via nltk
 jsonlines==3.1.0
     # via docling-ibm-models
 jsonref==1.1.0
     # via docling-core
-jsonschema==4.23.0
+jsonschema==4.25.0
     # via docling-core
     # via mistral-common
     # via outlines
     # via outlines-core
     # via ray
-jsonschema-specifications==2024.10.1
+jsonschema-specifications==2025.4.1
     # via jsonschema
 jupyter-client==8.6.3
     # via ipykernel
-jupyter-core==5.7.2
+jupyter-core==5.8.1
     # via ipykernel
     # via jupyter-client
 jupyterlab-widgets==3.0.15
@@ -285,64 +299,46 @@ latex2mathml==3.78.0
     # via docling-core
 lazy-loader==0.4
     # via scikit-image
-llama-cloud==0.1.26
+llama-cloud==0.1.35
     # via llama-cloud-services
     # via llama-index-indices-managed-llama-cloud
-llama-cloud-services==0.6.34
+llama-cloud-services==0.6.53
     # via llama-parse
-llama-index==0.12.43
+llama-index==0.13.0
     # via llm-tools
-llama-index-agent-openai==0.4.11
+llama-index-cli==0.5.0
     # via llama-index
-    # via llama-index-program-openai
-llama-index-cli==0.4.3
-    # via llama-index
-llama-index-core==0.12.43
+llama-index-core==0.13.0
     # via llama-cloud-services
     # via llama-index
-    # via llama-index-agent-openai
     # via llama-index-cli
     # via llama-index-embeddings-openai
     # via llama-index-indices-managed-llama-cloud
     # via llama-index-llms-openai
-    # via llama-index-multi-modal-llms-openai
     # via llama-index-node-parser-topic
-    # via llama-index-program-openai
-    # via llama-index-question-gen-openai
     # via llama-index-readers-file
     # via llama-index-readers-llama-parse
-llama-index-embeddings-openai==0.3.1
+llama-index-embeddings-openai==0.5.0
     # via llama-index
     # via llama-index-cli
-llama-index-indices-managed-llama-cloud==0.7.7
+llama-index-indices-managed-llama-cloud==0.9.0
     # via llama-index
-llama-index-instrumentation==0.2.0
+llama-index-instrumentation==0.4.0
     # via llama-index-workflows
-llama-index-llms-openai==0.4.7
+llama-index-llms-openai==0.5.0
     # via llama-index
-    # via llama-index-agent-openai
     # via llama-index-cli
-    # via llama-index-multi-modal-llms-openai
-    # via llama-index-program-openai
-    # via llama-index-question-gen-openai
-llama-index-multi-modal-llms-openai==0.5.1
-    # via llama-index
-llama-index-node-parser-topic==0.2.0
+llama-index-node-parser-topic==0.3.0
     # via llm-tools
-llama-index-program-openai==0.3.2
+llama-index-readers-file==0.5.0
     # via llama-index
-    # via llama-index-question-gen-openai
-llama-index-question-gen-openai==0.3.1
+llama-index-readers-llama-parse==0.5.0
     # via llama-index
-llama-index-readers-file==0.4.9
-    # via llama-index
-llama-index-readers-llama-parse==0.4.0
-    # via llama-index
-llama-index-workflows==0.2.2
+llama-index-workflows==1.2.0
     # via llama-index-core
-llama-parse==0.6.34
+llama-parse==0.6.53
     # via llama-index-readers-llama-parse
-llguidance==0.7.14
+llguidance==0.7.30
     # via vllm
 llvmlite==0.44.0
     # via numba
@@ -356,7 +352,7 @@ markdown-it-py==3.0.0
     # via rich
 marko==2.1.4
     # via docling
-markupsafe==2.1.5
+markupsafe==3.0.2
     # via jinja2
 marshmallow==3.26.1
     # via dataclasses-json
@@ -365,33 +361,31 @@ matplotlib-inline==0.1.7
     # via ipython
 mdurl==0.1.2
     # via markdown-it-py
-mistral-common==1.5.4
+mistral-common==1.8.3
     # via vllm
 mpire==2.10.2
     # via semchunk
 mpmath==1.3.0
     # via sympy
-msgpack==1.1.0
+msgpack==1.1.1
     # via ray
 msgspec==0.19.0
     # via unsloth-zoo
     # via vllm
-multidict==6.0.5
+multidict==6.6.3
     # via aiohttp
     # via yarl
-multiprocess==0.70.15
+multiprocess==0.70.16
     # via datasets
     # via evaluate
     # via mpire
 mypy-extensions==1.1.0
     # via typing-inspect
-nanobind==2.6.1
-    # via xgrammar
 nest-asyncio==1.6.0
     # via ipykernel
     # via llama-index-core
     # via outlines
-networkx==3.3
+networkx==3.5
     # via llama-index-core
     # via scikit-image
     # via torch
@@ -403,9 +397,9 @@ nltk==3.9.1
     # via llama-index
     # via llama-index-core
     # via rouge-score
-numba==0.61.0
+numba==0.61.2
     # via vllm
-numpy==2.1.2
+numpy==2.2.6
     # via accelerate
     # via bitsandbytes
     # via cupy-cuda12x
@@ -466,24 +460,50 @@ nvidia-nvjitlink-cu12==12.4.127
     # via torch
 nvidia-nvtx-cu12==12.4.127
     # via torch
-openai==1.90.0
-    # via llama-index-agent-openai
+openai==1.98.0
     # via llama-index-embeddings-openai
     # via llama-index-llms-openai
     # via llm-tools
     # via vllm
-opencv-python-headless==4.11.0.86
+opencv-python-headless==4.12.0.88
     # via docling-ibm-models
     # via easyocr
     # via mistral-common
     # via vllm
 openpyxl==3.1.5
     # via docling
+opentelemetry-api==1.26.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-sdk
+    # via opentelemetry-semantic-conventions
+    # via vllm
+opentelemetry-exporter-otlp==1.26.0
+    # via vllm
+opentelemetry-exporter-otlp-proto-common==1.26.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-grpc==1.26.0
+    # via opentelemetry-exporter-otlp
+opentelemetry-exporter-otlp-proto-http==1.26.0
+    # via opentelemetry-exporter-otlp
+opentelemetry-proto==1.26.0
+    # via opentelemetry-exporter-otlp-proto-common
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-sdk==1.26.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+    # via opentelemetry-exporter-otlp-proto-http
+    # via vllm
+opentelemetry-semantic-conventions==0.47b0
+    # via opentelemetry-sdk
+opentelemetry-semantic-conventions-ai==0.4.12
+    # via vllm
 outlines==0.1.11
     # via vllm
 outlines-core==0.1.26
     # via outlines
-packaging==24.1
+packaging==25.0
     # via accelerate
     # via datasets
     # via evaluate
@@ -499,6 +519,7 @@ packaging==24.1
     # via transformers
     # via unsloth
     # via unsloth-zoo
+    # via wandb
 pandas==2.2.3
     # via datasets
     # via docling
@@ -508,15 +529,15 @@ pandas==2.2.3
     # via llm-tools
 parso==0.8.4
     # via jedi
-partial-json-parser==0.2.1.1.post5
+partial-json-parser==0.2.1.1.post6
     # via vllm
-peft==0.15.1
+peft==0.16.0
     # via llm-tools
     # via unsloth
     # via unsloth-zoo
 pexpect==4.9.0
     # via ipython
-pillow==11.0.0
+pillow==11.3.0
     # via cairosvg
     # via diffusers
     # via docling
@@ -533,50 +554,56 @@ pillow==11.0.0
     # via torchvision
     # via unsloth-zoo
     # via vllm
-pip==25.1.1
+pip==25.2
     # via llm-tools
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via banks
     # via jupyter-core
     # via llama-cloud-services
+    # via llama-index-core
     # via wandb
-pluggy==1.5.0
+pluggy==1.6.0
     # via docling
     # via pytest
-prometheus-client==0.21.1
+prometheus-client==0.22.1
     # via prometheus-fastapi-instrumentator
     # via vllm
 prometheus-fastapi-instrumentator==7.1.0
     # via vllm
 prompt-toolkit==3.0.51
     # via ipython
-protobuf==3.20.3
+propcache==0.3.2
+    # via aiohttp
+    # via yarl
+protobuf==4.25.8
+    # via googleapis-common-protos
+    # via opentelemetry-proto
     # via ray
     # via unsloth
     # via unsloth-zoo
     # via vllm
     # via wandb
-psutil==5.9.8
+psutil==7.0.0
     # via accelerate
     # via ipykernel
     # via peft
     # via unsloth
     # via unsloth-zoo
     # via vllm
-    # via wandb
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
 py-cpuinfo==9.0.0
     # via vllm
-pyarrow==19.0.1
+pyarrow==21.0.0
     # via datasets
     # via llm-tools
 pyclipper==1.3.0.post6
     # via easyocr
 pycountry==24.6.1
     # via outlines
+    # via pydantic-extra-types
 pycparser==2.22
     # via cffi
 pydantic==2.11.7
@@ -587,6 +614,7 @@ pydantic==2.11.7
     # via docling-ibm-models
     # via docling-parse
     # via fastapi
+    # via fastapi-cloud-cli
     # via llama-cloud
     # via llama-cloud-services
     # via llama-index-core
@@ -597,27 +625,31 @@ pydantic==2.11.7
     # via mistral-common
     # via openai
     # via outlines
+    # via pydantic-extra-types
     # via pydantic-settings
     # via vllm
     # via wandb
     # via xgrammar
 pydantic-core==2.33.2
     # via pydantic
-pydantic-settings==2.8.1
+pydantic-extra-types==2.10.5
+    # via mistral-common
+pydantic-settings==2.10.1
     # via docling
     # via llm-tools
-pygments==2.19.1
+pygments==2.19.2
     # via ipython
     # via ipython-pygments-lexers
     # via mpire
+    # via pytest
     # via rich
 pylatexenc==2.10
     # via docling
-pypdf==5.6.1
+pypdf==5.9.0
     # via llama-index-readers-file
-pypdfium2==4.30.1
+pypdfium2==4.30.0
     # via docling
-pytest==8.3.5
+pytest==8.4.1
     # via llm-tools
 python-bidi==0.6.6
     # via easyocr
@@ -626,7 +658,7 @@ python-dateutil==2.9.0.post0
     # via pandas
 python-docx==1.2.0
     # via docling
-python-dotenv==1.0.1
+python-dotenv==1.1.1
     # via llama-cloud-services
     # via pydantic-settings
     # via uvicorn
@@ -636,9 +668,9 @@ python-multipart==0.0.20
     # via fastapi
 python-pptx==1.0.2
     # via docling
-pytz==2024.1
+pytz==2025.2
     # via pandas
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via accelerate
     # via datasets
     # via docling-core
@@ -653,23 +685,23 @@ pyyaml==6.0.1
     # via uvicorn
     # via vllm
     # via wandb
-pyzmq==26.4.0
+pyzmq==27.0.0
     # via ipykernel
     # via jupyter-client
     # via vllm
-ray==2.43.0
+ray==2.48.0
     # via vllm
 referencing==0.36.2
     # via jsonschema
     # via jsonschema-specifications
     # via outlines
-regex==2024.5.15
+regex==2025.7.34
     # via diffusers
     # via nltk
     # via tiktoken
     # via transformers
     # via unsloth-zoo
-requests==2.32.3
+requests==2.32.4
     # via datasets
     # via diffusers
     # via docling
@@ -677,30 +709,33 @@ requests==2.32.3
     # via huggingface-hub
     # via llama-index-core
     # via mistral-common
+    # via opentelemetry-exporter-otlp-proto-http
     # via outlines
     # via ray
     # via tiktoken
     # via transformers
     # via vllm
     # via wandb
-rich==14.0.0
+rich==14.1.0
     # via rich-toolkit
-    # via trl
     # via typer
     # via tyro
-rich-toolkit==0.14.1
+rich-toolkit==0.14.9
     # via fastapi-cli
+    # via fastapi-cloud-cli
+rignore==0.6.4
+    # via fastapi-cloud-cli
 rouge-score==0.1.2
     # via llm-tools
-rpds-py==0.24.0
+rpds-py==0.26.0
     # via jsonschema
     # via referencing
 rtree==1.4.0
     # via docling
     # via docling-ibm-models
-ruff==0.11.5
+ruff==0.12.7
     # via llm-tools
-safetensors==0.4.3
+safetensors==0.5.3
     # via accelerate
     # via diffusers
     # via docling-ibm-models
@@ -709,7 +744,7 @@ safetensors==0.4.3
 scikit-image==0.25.2
     # via easyocr
     # via llm-tools
-scipy==1.15.2
+scipy==1.16.1
     # via docling
     # via easyocr
     # via scikit-image
@@ -722,23 +757,20 @@ sentencepiece==0.2.0
     # via unsloth-zoo
     # via vllm
     # via xgrammar
-sentry-sdk==2.28.0
-    # via wandb
-setproctitle==1.3.6
+sentry-sdk==2.34.1
+    # via fastapi-cloud-cli
     # via wandb
 setuptools==80.9.0
     # via llama-index-core
     # via torch
     # via vllm
-    # via wandb
 shapely==2.1.1
     # via easyocr
 shellingham==1.5.4
     # via typer
 shtab==1.7.2
     # via tyro
-six==1.16.0
-    # via docker-pycreds
+six==1.17.0
     # via python-dateutil
     # via rouge-score
     # via vllm
@@ -746,15 +778,14 @@ smmap==5.0.2
     # via gitdb
 sniffio==1.3.1
     # via anyio
-    # via httpx
     # via openai
 soupsieve==2.7
     # via beautifulsoup4
-sqlalchemy==2.0.41
+sqlalchemy==2.0.42
     # via llama-index-core
 stack-data==0.6.3
     # via ipython
-starlette==0.46.1
+starlette==0.47.2
     # via fastapi
     # via prometheus-fastapi-instrumentator
 striprtf==0.0.26
@@ -765,6 +796,7 @@ tabulate==0.9.0
     # via docling-core
     # via docling-parse
 tenacity==9.1.2
+    # via llama-cloud-services
     # via llama-index-core
 tifffile==2025.6.11
     # via scikit-image
@@ -776,7 +808,7 @@ tiktoken==0.9.0
 tinycss2==1.4.0
     # via cairosvg
     # via cssselect2
-tokenizers==0.21.1
+tokenizers==0.21.4
     # via transformers
     # via vllm
 torch==2.6.0
@@ -803,10 +835,10 @@ torchvision==0.21.0
     # via easyocr
     # via unsloth
     # via vllm
-tornado==6.4.2
+tornado==6.5.1
     # via ipykernel
     # via jupyter-client
-tqdm==4.66.5
+tqdm==4.67.1
     # via datasets
     # via docling
     # via docling-ibm-models
@@ -825,14 +857,13 @@ tqdm==4.66.5
     # via unsloth-zoo
     # via vllm
 traitlets==5.14.3
-    # via comm
     # via ipykernel
     # via ipython
     # via ipywidgets
     # via jupyter-client
     # via jupyter-core
     # via matplotlib-inline
-transformers==4.51.2
+transformers==4.54.1
     # via compressed-tensors
     # via docling-core
     # via docling-ibm-models
@@ -848,18 +879,22 @@ triton==3.2.0
     # via torch
     # via unsloth
     # via unsloth-zoo
-trl==0.15.2
+    # via xgrammar
+trl==0.20.0
     # via llm-tools
     # via unsloth
     # via unsloth-zoo
-typeguard==4.4.2
+typeguard==4.4.4
     # via tyro
-typer==0.15.2
+typer==0.16.0
     # via docling
     # via docling-core
     # via fastapi-cli
-typing-extensions==4.12.2
+    # via fastapi-cloud-cli
+typing-extensions==4.14.1
+    # via aiosignal
     # via aiosqlite
+    # via anyio
     # via beautifulsoup4
     # via docling-core
     # via fastapi
@@ -867,49 +902,55 @@ typing-extensions==4.12.2
     # via llama-index-core
     # via mistral-common
     # via openai
+    # via opentelemetry-sdk
     # via outlines
     # via pydantic
     # via pydantic-core
+    # via pydantic-extra-types
     # via python-docx
     # via python-pptx
     # via referencing
     # via rich-toolkit
     # via sqlalchemy
+    # via starlette
     # via torch
     # via typeguard
     # via typer
     # via typing-inspect
     # via typing-inspection
     # via tyro
+    # via unsloth-zoo
     # via vllm
     # via wandb
 typing-inspect==0.9.0
     # via dataclasses-json
     # via llama-index-core
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via pydantic
-tyro==0.9.17
+    # via pydantic-settings
+tyro==0.9.27
     # via unsloth
     # via unsloth-zoo
-tzdata==2024.1
+tzdata==2025.2
     # via pandas
-unsloth==2025.4.7
+unsloth==2025.7.11
     # via llm-tools
-unsloth-zoo==2025.4.4
+unsloth-zoo==2025.7.11
     # via unsloth
-urllib3==1.26.13
+urllib3==2.5.0
     # via requests
     # via sentry-sdk
-uvicorn==0.34.0
+uvicorn==0.35.0
     # via fastapi
     # via fastapi-cli
+    # via fastapi-cloud-cli
 uvloop==0.21.0
     # via uvicorn
-vllm==0.8.3
+vllm==0.8.5.post1
     # via llm-tools
-wandb==0.19.11
+wandb==0.21.0
     # via llm-tools
-watchfiles==1.0.5
+watchfiles==1.1.0
     # via uvicorn
     # via vllm
 wcwidth==0.2.13
@@ -930,14 +971,14 @@ wrapt==1.17.2
 xformers==0.0.29.post2
     # via unsloth
     # via vllm
-xgrammar==0.1.17
+xgrammar==0.1.18
     # via vllm
 xlsxwriter==3.2.5
     # via python-pptx
 xxhash==3.5.0
     # via datasets
     # via evaluate
-yarl==1.9.4
+yarl==1.20.1
     # via aiohttp
-zipp==3.21.0
+zipp==3.23.0
     # via importlib-metadata

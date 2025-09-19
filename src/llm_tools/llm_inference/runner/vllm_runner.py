@@ -21,7 +21,7 @@ TODO:
     - After a lot updates of hf dataset, need to check the work of all methods.
 """
 
-# from typing import override
+from typing import override
 
 import numpy as np
 import pandas as pd
@@ -60,6 +60,7 @@ class VLLMRunner(AbstractModelRunner):
             dtype="bfloat16",
             tensor_parallel_size=torch.cuda.device_count(),
             max_model_len=self.model_config.max_model_len,
+            # quantization="bitsandbytes"
         )
 
         self.tokenizer = self._get_tokenizer()
@@ -72,7 +73,7 @@ class VLLMRunner(AbstractModelRunner):
         torch.cuda.empty_cache()
         ray.shutdown()
 
-    #    @override
+    @override
     def execute_once(self, model_input: str) -> str:
         model_output = self.model.generate(
             model_input, sampling_params=self.params, use_tqdm=True
@@ -86,10 +87,12 @@ class VLLMRunner(AbstractModelRunner):
     def _get_tokenizer(self) -> AbstractTokenizerWrapper:
         return select_tokenizer_processor(self.config)
 
-    #    @override
+    @override
     def execute(self, model_input_ds: Dataset) -> list[ModelOutputItem]:
         batch_size: int = self.config.dataset.batch_size
-        count_batches: int = max(1, len(model_input_ds) // batch_size)
+        count_batches: int = len(model_input_ds) // batch_size
+        count_batches += 1 if len(model_input_ds) % batch_size else 0
+
         generation_result: list[ModelOutputItem] = []
 
         model_inputs: list[dict[str, str]] = [

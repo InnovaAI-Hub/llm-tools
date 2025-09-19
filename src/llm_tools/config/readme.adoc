@@ -4,3 +4,6 @@
 * 0.4.5 -- Added new types in `model_type`;
 * 0.4.6 -- Added `dataset_config` to `exp_config`;
 * 0.4.7 -- Added `load_in_4bit` and `load_in_8bit` in `model_config`
+* 0.5.0 -- Added `Custom metric` field
+* 0.5.1 -- Added unsloth support to runner
+

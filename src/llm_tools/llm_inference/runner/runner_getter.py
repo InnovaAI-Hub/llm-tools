@@ -11,9 +11,11 @@ Date Modified: 13.10.2024
 
 from llm_tools.config.config import Config
 from llm_tools.llm_inference.runner.abstract_model_runner import AbstractModelRunner
+from llm_tools.llm_inference.runner.server_runner import ServerRunner
 from llm_tools.type.runner_type import RunnerType
 from llm_tools.llm_inference.runner.hf_runner import HFRunner
 from llm_tools.llm_inference.runner.vllm_runner import VLLMRunner
+from llm_tools.llm_inference.runner.unsloth_runner import UnslothRunner
 
 
 class RunnerGetter:
@@ -22,6 +24,8 @@ class RunnerGetter:
         runners = {
             RunnerType.HF: HFRunner,
             RunnerType.VLLM: VLLMRunner,
+            RunnerType.UNSLOTH: UnslothRunner,
+            RunnerType.SERVER: ServerRunner,
         }
 
         return runners[runner_type](config)
