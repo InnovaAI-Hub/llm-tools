@@ -1,7 +1,7 @@
 = LLM Tools
 :app-name: LLM Tools
 :author: Artem Durynin
-:email: artem.d@raftds.com, mail@durynin1.ru
+:email: artem.durynin@raftds.com, mail@durynin1.ru
 :toc-title: Table of Contents
 :toc: auto
 :icons: font
@@ -10,70 +10,89 @@
 
 == Description
 
-LLM Tools is a simple and modular pipeline designed for working with large language models (LLMs) using configurable runners, trainers, and models. The framework allows you to easily switch between different Hugging Face models without rewriting core logic, requiring only changes in the YAML configuration.
+LLM Tools is a modular and extensible framework for working with Large Language Models (LLMs).  
+It provides a **single configurable pipeline** for both *fine-tuning* and *inference* of different models, powered by Hugging Face, vLLM, Unsloth, and PEFT.  
+
+With centralized YAML configuration, you can switch between models, trainers, and runners without modifying code.
 
 == Key Features
-* Single pipeline class for various Hugging Face models.
-* Switch models by modifying the configuration file—no code changes required.
-* Extensible to support different runners and trainers.
-* Centralized configuration management via YAML.
+
+* Unified pipeline for *training* and *inference*.
+* Configurable via YAML – change the model or runner without touching code.
+* Supports Hugging Face, vLLM, Unsloth, PEFT adapters.
+* Dataset utilities with dialog/message abstractions.
+* Metric evaluation, including Rouge and SVG-based visualization.
+* Extensible architecture: add new runners, trainers, or metrics easily.
 
 == Installation
 
 === Prerequisites
 
 - Python 3.12+
-- `micromamba` for managing development environments.
-
-In future releases, support for Rye will be added.
+- `rye` for environment and dependency management.
 
 === Steps
 
 . Clone this repository:
 +
-[, bash]
+[,bash]
 ----
 git clone https://github.com/your-repo/llm-tools.git
 cd llm-tools
 ----
 
-. Set up `micromamba`:
+. Set up environment with Rye:
 +
-[, bash]
+[,bash]
 ----
-micromamba create -f ./environment.yml
-micromamba activate llm-tools
+rye sync
 ----
 
-. Install package:
+. Install the package:
 +
-[, bash]
+[,bash]
 ----
 pip install .
 ----
 
 == Usage
 
-Once installed, you can use the pipeline by providing a YAML configuration file. The only change required to switch models is updating the `model_path` in the configuration. Examples in the `examples` directory.
+LLM Tools operates through YAML configuration files.  
+You only need to update the configuration to switch models or pipelines.
+
+=== Inference
+
+Check the `examples/` directory for runnable scripts.
+
+== Configuration
+
+All pipeline behavior is defined via YAML files.  
+
+* `model_configs/` – predefined model configs (LLaMA 3, Qwen, etc.)
 
 == Future Plans
 
-* Add support for Rye as a development environment tool.
-* Extend examples for using inference and training pipelines.
-* Provide detailed configuration documentation for the YAML format.
+* Extend example scripts for more use cases (chatbots, alignment, evaluation).
+* Provide detailed YAML schema documentation.
+* Add adapter/dataset storage integration with DVC.
 
 == Dependencies
 
+Core dependencies:
+
 * Python 3.12+
-* micromamba
-* pandas
-* datasets
 * torch
+* transformers
 * vllm
+* unsloth
+* peft
+* datasets
+* evaluate
+* pandas
 * pydantic
 
-NOTE: Update this later.
+(see `pyproject.toml` for the complete list)
 
 == License
 
-*To be added.*
+This project is licensed under the **GPLv3** license.
