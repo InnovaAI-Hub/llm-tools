@@ -1,7 +1,7 @@
 = LLM Tools
 :app-name: LLM Tools
 :author: Artem Durynin
-:email: artem.durynin@raftds.com, mail@durynin1.ru
+:email: artem.durynin@raftds.com
 :toc-title: Table of Contents
 :toc: auto
 :icons: font
