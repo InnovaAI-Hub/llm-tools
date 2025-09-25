@@ -72,7 +72,20 @@ All pipeline behavior is defined via YAML files.
 
 === Quantization
 
-The library can work with quantized models. To do this, the model must first be quantized using various libraries. For example, you can use the `bnb` library. The library can use models quantized in 4 bits. After that, you need to specify the path to the quantized model in the config files and set the parameter `load_in_4bit: True`. Then you can run the script to train the model. Config example: `model_configs/qwen8b-train.yaml`.
+This library can work with quantized models, allowing you to significantly reduce memory requirements and improve inference speed, especially when working with large language models.
+
+==== How to Use Quantized Models
+
+Quantize the Model before using a quantized model with this library, you must first quantize your pretrained model using external tools or libraries. One of the most popular tools for this purpose is bitsandbytes (bnb), which supports 8-bit and 4-bit quantization for PyTorch models. Other options include AutoGPTQ or HuggingFace’s built-in quantization features.
+
+==== Supported Quantization Level
+
+This library currently supports models quantized to 4 bits.
+This provides an optimal balance between memory efficiency and preserving model performance.
+
+==== Configure the Model Path and Quantization Settings
+
+Once you've quantized your model, save it to a directory. In your configuration file (for example, model_configs/qwen8b-train.yaml), specify the path to your quantized model and set the following parameter: `load_in_4bit: True`. Then you can run the script to train the model.
 
 == Future Plans
 
