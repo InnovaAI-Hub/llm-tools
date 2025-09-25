@@ -72,7 +72,7 @@ All pipeline behavior is defined via YAML files.
 
 === Quantization
 
-To train models with quantization, check this config: `model_configs/qwen8b-train.yaml`.
+The library can work with quantized models. To do this, the model must first be quantized using various libraries. For example, you can use the `bnb` library. The library can use models quantized in 4 bits. After that, you need to specify the path to the quantized model in the config files and set the parameter `load_in_4bit: True`. Then you can run the script to train the model. Config example: `model_configs/qwen8b-train.yaml`.
 
 == Future Plans
 
