@@ -1,17 +1,21 @@
-config_version: 0.4.6
+config_version: 0.5.0
 
 train:
   experiments:
-    - experiment_name: svg
+    - experiment_name: svg_v9
       save_to: ./trained/
-      metric: meteor
+      metric_config:
+        metric_type: hf_metric
+        name: "meteor"
 
-      test_size: 0.0003 # Move to ds settings
+      test_size: 0.0005 # Move to ds settings
+      # eval_path: "/home/artem.durynin@corp.raftds.com/workspace/article/dataset/formatted(0)_evaluate2.parquet"
+      save_merged: False
 
       peft_method:
         name: "lora"
         lora_conf: # https://huggingface.co/docs/peft/v0.12.0/en/package_reference/lora#peft.LoraConfig
-          r: 8
+          r: 64
           inference_mode: False
           # target_modules: all-linear
           target_modules:
@@ -19,14 +23,11 @@ train:
            - k_proj
            - v_proj
            - o_proj
-           - lm_head
-           - embed_tokens
-           
-          # modules_to_save:
-          #  - lm_head
-          #  - embed_tokens
- 
-          lora_alpha: 16
+           - gate_proj
+           - up_proj
+           - down_proj
+            
+          lora_alpha: 128
           lora_dropout: 0
           fan_in_fan_out: False
           use_rslora: False
@@ -51,9 +52,14 @@ train:
         output_dir: "./train_arts"
         overwrite_output_dir: True
         eval_strategy: "steps"
+
+        save_strategy: "best"
+        save_total_limit: 3
+        metric_for_best_model: "meteor"
+        
         bf16: True
         # fp16: True
-        num_train_epochs: 2
+        num_train_epochs: 10
         load_best_model_at_end: True
          
         include_tokens_per_second: True
@@ -66,26 +72,27 @@ train:
          
         eval_accumulation_steps: 1
         eval_on_start: True
-        logging_steps: 50
+        logging_steps: 100
          
-        gradient_accumulation_steps: 5
+        gradient_accumulation_steps: 2
         gradient_checkpointing: True
          
-        run_name: svg
-        report_to: wandb
+        run_name: svg_v9
+        report_to: tensorboard
  
-        auto_find_batch_size: False
+        auto_find_batch_size: True
         dataloader_num_workers: 0
-        per_device_train_batch_size: 15
+        per_device_train_batch_size: 10
         per_device_eval_batch_size: 1
  
         optim: adamw_torch
       
       dataset_config:
         batch_size: 1
-        add_generation_prompt: true
+        add_generation_prompt: False
 
       llm_model:
         llm_url: "unsloth/Qwen3-8B-unsloth-bnb-4bit"
-        max_new_tokens: 24000
-        max_seq_length: 24000
+        max_new_tokens: 60000
+        max_seq_length: 60000
+        load_in_4bit: True
