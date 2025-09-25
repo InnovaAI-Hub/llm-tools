@@ -70,6 +70,10 @@ All pipeline behavior is defined via YAML files.
 
 * `model_configs/` – predefined model configs (LLaMA 3, Qwen, etc.)
 
+=== Quantization
+
+To train models with quantization, check this config: `model_configs/qwen8b-train.yaml`.
+
 == Future Plans
 
 * Extend example scripts for more use cases (chatbots, alignment, evaluation).
