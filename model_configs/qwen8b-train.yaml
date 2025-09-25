@@ -9,7 +9,6 @@ train:
         name: "meteor"
 
       test_size: 0.0005 # Move to ds settings
-      # eval_path: "/home/artem.durynin@corp.raftds.com/workspace/article/dataset/formatted(0)_evaluate2.parquet"
       save_merged: False
 
       peft_method:
